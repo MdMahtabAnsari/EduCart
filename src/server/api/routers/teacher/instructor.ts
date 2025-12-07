@@ -1,6 +1,6 @@
 import { router, teacherProcedure } from "@/server/api/trpc";
 import { inferRouterOutputs } from "@trpc/server";
-import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema, editInstructorInCourseSchema, removeInstructorFromCourseSchema } from "@/lib/schema/instructor";
+import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema, editInstructorInCourseSchema, removeInstructorFromCourseSchema,filterNonAddedCourseInstructorsWithInfiniteScrollSchema } from "@/lib/schema/instructor";
 import { PaginationSchema } from "@/lib/schema/page";
 import { TRPCError } from "@trpc/server";
 import { id } from "@/lib/schema/common";
@@ -167,7 +167,7 @@ export const instructorRouter = router({
         }
     }),
 
-    filterNonAddedCourseInstructorsWithInfiniteScroll: teacherProcedure.input(filterInstructorCoursesWithInfiniteScrollSchema).query(async ({ input, ctx }) => {
+    filterNonAddedCourseInstructorsWithInfiniteScroll: teacherProcedure.input(filterNonAddedCourseInstructorsWithInfiniteScrollSchema).query(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
         const { courseId, search, cursor, limit } = input;
         try {

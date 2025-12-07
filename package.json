@@ -13,7 +13,8 @@
     "prisma:seed": "prisma db seed",
     "auth:generate": "npx @better-auth/cli@latest generate --config ./src/lib/auth/auth.ts --yes",
     "docker:db:up": "docker compose -f docker/db.docker-compose.yml up -d",
-    "docker:db:down": "docker compose -f docker/db.docker-compose.yml down"
+    "docker:db:down": "docker compose -f docker/db.docker-compose.yml down",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.42",

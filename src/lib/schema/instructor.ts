@@ -45,6 +45,13 @@ export type AddInstructorToCourseSchema = z.infer<typeof addInstructorToCourseSc
 
 export const filterInstructorCoursesWithInfiniteScrollSchema = filterInstructorCoursesSchema.extend(infiniteScroll.shape);
 
+export const filterNonAddedCourseInstructors = z.object({
+    courseId: id,
+    search: z.string().optional(),
+});
+
+export const filterNonAddedCourseInstructorsWithInfiniteScrollSchema = filterNonAddedCourseInstructors.extend(infiniteScroll.shape);
+
 export const removeInstructorFromCourseSchema = z.object({
     id: id,
     courseId: id,
