@@ -4,7 +4,7 @@ import { Media } from "@/components/media/media";
 import { CategoryBadges } from "@/components/category/category-badges";
 import { TagBadges } from "@/components/tag/tag-badges";
 import parse from "html-react-parser";
-import { SquarePen, Eye, Plus, ShoppingBasket, Trash, UserCheck, ShoppingCart } from 'lucide-react';
+import { SquarePen, Eye, ShoppingBasket, Trash, UserCheck, ShoppingCart } from 'lucide-react';
 import { Separator } from "@/components/ui/separator";
 import { Rating, RatingButton } from "@/components/ui/shadcn-io/rating";
 import { PriceDisplay } from "@/components/price/display-price";
@@ -31,7 +31,7 @@ export function CourseDetails({ course, role }: CourseDetailsProps) {
     const createOrderMutation = api.user.order.createOrder.useMutation();
     const addToCartMutation = api.user.cart.addToCart.useMutation();
     const { permissions } = course;
-    const { canDelete, canUpdate, canCreate } = permissions;
+    const { canDelete, canUpdate } = permissions;
 
     const deleteCourse = async (courseId: string) => {
         toast.promise(
