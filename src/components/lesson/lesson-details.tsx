@@ -33,7 +33,7 @@ export function LessonDetails({ lesson, role }: LessonDetailsProps) {
     toast.promise(
       deleteLessonMutation.mutateAsync(id, {
         onSuccess: () => {
-          router.push(`/${role}/courses/${courseId}/sections`);
+          router.push(`/${role}/courses/${courseId}/sections/${sectionId}/lessons`);
         },
       }),
       {
