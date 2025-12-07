@@ -30,12 +30,6 @@ export const courseRouter = router({
                     tags: {
                         include: { tag: true }
                     },
-                    instructor: {
-                        where: {
-                            status: 'APPROVED'
-                        },
-                        include: { user: true },
-                    },
                     media: true,
                     languages: {
                         include: { language: true }
@@ -58,10 +52,23 @@ export const courseRouter = router({
                     courseId: input,
                 },
             });
-            const canCreate = course.instructor.some(inst => inst.userId === ctx.session!.user.id && inst.permissions.includes('CREATE'));
-            const canUpdate = course.instructor.some(inst => inst.userId === ctx.session!.user.id && inst.permissions.includes('UPDATE'));
-            const canDelete = course.instructor.some(inst => inst.userId === ctx.session!.user.id && inst.permissions.includes('DELETE'));
-            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: false, canAddToCart: false, permissions: { canCreate, canUpdate, canDelete } };
+            const instrucorCount = await prisma.courseInstructor.count({
+                where: {
+                    courseId: input,
+                    status: 'APPROVED'
+                },
+            });
+            const permissions = await prisma.courseInstructor.findFirst({
+                where: {
+                    courseId: input,
+                    userId: ctx.session!.user.id,
+                    status: 'APPROVED'
+                },
+            });
+            const canCreate = permissions?.permissions.includes('CREATE') ?? false;
+            const canUpdate = permissions?.permissions.includes('UPDATE') ?? false;
+            const canDelete = permissions?.permissions.includes('DELETE') ?? false;
+            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: false, canAddToCart: false, permissions: { canCreate, canUpdate, canDelete },instructors: instrucorCount };
         } catch (error) {
             throw error;
         }

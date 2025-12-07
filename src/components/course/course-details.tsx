@@ -25,7 +25,6 @@ interface CourseDetailsProps {
 export function CourseDetails({ course, role }: CourseDetailsProps) {
     const categories = course.categories.map(c => ({ id: c.categoryId, name: c.category.name }));
     const tags = course.tags.map(t => ({ id: t.tagId, name: t.tag.name }));
-    const instructors = course.instructor?.map(i => ({ id: i.user.id, name: i.user.name, image: i.user.image }));
     const languageNames = course.languages.map(l => ISO6391.getName(l.language.code)).filter(name => name);
     const router = useRouter();
     const deleteCourseMutation = api.teacher.course.deleteCourse.useMutation();
@@ -99,18 +98,23 @@ export function CourseDetails({ course, role }: CourseDetailsProps) {
                     </div>
 
                     <div className="flex items-center justify-between gap-2">
-                        <div>
-                            <div className="text-sm text-muted-foreground">Instructors</div>
-                            <div className="font-semibold">
-                                {instructors && instructors.length > 0
-                                    ? instructors.map(i => i.name).join(", ")
-                                    : "N/A"}
+                        <div className="text-right">
+                            <div className="text-xs text-muted-foreground">Instructors</div>
+                            <div className="text-lg font-semibold flex gap-2 items-center">
+                                {course.instructors}
+                                <Link href={`/${role}/courses/${course.id}/instructors`}>
+                                    <Button className="cursor-pointer" variant="ghost" size='icon-sm'>
+                                        <UserCheck />
+                                    </Button>
+                                </Link>
                             </div>
+
                         </div>
 
                         <div className="text-right">
                             <div className="text-xs text-muted-foreground">Enrolments</div>
-                            <div className={`text-lg font-semibold ${(role === 'admin' || role === 'teacher') && "flex gap-2 items-center"}`}>{course.enrolments}
+                            <div className={`text-lg font-semibold ${(role === 'admin' || role === 'teacher') && "flex gap-2 items-center"}`}>
+                                {course.enrolments}
                                 {(role === "teacher" || role === "admin") && (
                                     <Link href={`/${role}/courses/${course.id}/enrollments`}>
                                         <Button className="cursor-pointer" variant="ghost" size='icon-sm'>
@@ -230,14 +234,6 @@ export function CourseDetails({ course, role }: CourseDetailsProps) {
                                 Sections
                             </Button>
                         </Link>
-                        {canCreate && (
-                            <Link href={`/${role}/courses/${course.id}/sections/create`}>
-                                <Button className="cursor-pointer" size='lg'>
-                                    <Plus />
-                                    Add Section
-                                </Button>
-                            </Link>
-                        )}
                         {canUpdate && (
                             <Link href={`/${role}/courses/${course.id}/edit`}>
                                 <Button className="cursor-pointer" size='lg'>

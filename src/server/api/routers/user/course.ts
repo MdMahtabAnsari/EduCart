@@ -22,9 +22,6 @@ export const courseRouter = router({
                     tags: {
                         include: { tag: true }
                     },
-                    instructor: {
-                        include: { user: true },
-                    },
                     media: true,
                     languages: {
                         include: { language: true }
@@ -56,6 +53,12 @@ export const courseRouter = router({
                     }
                 },
             });
+            const instrucorCount = await prisma.courseInstructor.count({
+                where: {
+                    courseId: input,
+                    status: 'APPROVED'
+                },
+            });
             const isInCart = await prisma.cartItem.findFirst({
                 where: {
                     courseId: input,
@@ -66,7 +69,7 @@ export const courseRouter = router({
             });
             const canBuy = isEnrolled ? false : true;
             const canAddToCart = isInCart ? false : true;
-            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: canBuy, canAddToCart: canAddToCart, permissions: { canCreate: false, canUpdate: false, canDelete: false } };
+            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: canBuy, canAddToCart: canAddToCart, permissions: { canCreate: false, canUpdate: false, canDelete: false }, instructors: instrucorCount };
         } catch (error) {
             throw error;
         }
