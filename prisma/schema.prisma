@@ -11,11 +11,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
-  id               String      @id  @default(uuid())
+  id               String      @id @default(uuid())
   name             String
   email            String      @unique
   emailVerified    Boolean     @default(false)
@@ -36,22 +35,22 @@ model User {
   passkeys         Passkey[]
 
   courseInstructors CourseInstructor[]
-  userOptions       UserOption[]
-  quizAttempts      QuizAttempt[]
   reviews           Review[]
   enrollments       Enrollment[]
   lessonProgress    LessonProgress[]
   cart              Cart?
   orders            Order[]
   payments          Payment[]
+  comments          Comment[]
+  reactions         CommentReaction[]
 
   @@map("user")
 }
 
 model Session {
-  id             String   @id  @default(uuid())
+  id             String   @id @default(uuid())
   expiresAt      DateTime
-  token          String  @unique
+  token          String   @unique
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   ipAddress      String?
@@ -64,7 +63,7 @@ model Session {
 }
 
 model Account {
-  id                    String    @id  @default(uuid())
+  id                    String    @id @default(uuid())
   accountId             String
   providerId            String
   userId                String
@@ -120,15 +119,38 @@ model Passkey {
 }
 
 model CourseInstructor {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String                      @id @default(uuid())
+  userId          String
+  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId        String
+  course          Course                      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  permissions     InstructorPermission[]
+  role            InstructorRole              @default(CO_INSTRUCTOR)
+  status          InstructorStatus            @default(PENDING)
+  share           Decimal                     @default(0) @db.Decimal(5, 2)
+  orderItemsShare OrderItemInstructorShare[]
 
   @@unique([userId, courseId])
+}
+
+enum InstructorPermission {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum InstructorRole {
+  OWNER
+  CO_INSTRUCTOR
+}
+
+enum InstructorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REMOVED
 }
 
 model Course {
@@ -140,25 +162,21 @@ model Course {
   published   Boolean            @default(false)
   price       Decimal            @default(0) @db.Decimal(10, 2)
   instructor  CourseInstructor[]
-  duration    Float              @default(0)
   level       CourseLevel        @default(BEGINNER)
-  language    Language           @default(ENGLISH)
+  languages   CourseLanguage[]
   isFree      Boolean            @default(false)
-  currency    Currency           @default(INR)
   offerPrice  Decimal?           @db.Decimal(10, 2)
   categories  CourseCategory[]
   isActive    Boolean            @default(true)
-  isDeleted   Boolean            @default(false)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
-  deletedAt   DateTime?
-  Sections    Section[]
-  quizzes     Quiz[]
+  sections    Section[]
   reviews     Review[]
   enrollments Enrollment[]
   cartItems   CartItem[]
   orderItems  OrderItem[]
   tags        CourseTag[]
+  ratings     Float              @default(0)
 }
 
 enum CourseLevel {
@@ -167,30 +185,22 @@ enum CourseLevel {
   ADVANCED
 }
 
-enum Language {
-  ENGLISH
-  SPANISH
-  FRENCH
-  GERMAN
-  CHINESE
-  JAPANESE
-  HINDI
-  ARABIC
-  RUSSIAN
-  PORTUGUESE
+model CourseLanguage {
+  id         String   @id @default(uuid())
+  courseId   String
+  languageId String
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  language   Language @relation(fields: [languageId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, languageId])
 }
 
-enum Currency {
-  USD
-  EUR
-  GBP
-  INR
-  JPY
-  CNY
-  AUD
-  CAD
-  CHF
-  SEK
+model Language {
+  id        String           @id @default(uuid())
+  code      String           @unique
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  courses   CourseLanguage[]
 }
 
 model CourseTag {
@@ -244,80 +254,58 @@ model Section {
 }
 
 model Lesson {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   title     String
   content   String
   mediaId   String
-  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  media     Media     @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   sectionId String
-  section   Section  @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  section   Section   @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   order     Int
-  isPreview Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPreview Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
 
-  Progress LessonProgress[]
+  progress LessonProgress[]
 }
 
-model Quiz {
-  id           String        @id @default(uuid())
-  title        String
-  courseId     String
-  course       Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  order        Int
-  questions    Question[]
-  quizAttempts QuizAttempt[]
+model Comment {
+  id       String @id @default(uuid())
+  content  String
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  // self-referencing fields for threaded comments
+  parentId  String?
+  parent    Comment?          @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[]         @relation("CommentReplies")
+  reactions CommentReaction[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  likes     Int               @default(0)
+  dislikes  Int               @default(0)
+  isEdited  Boolean           @default(false)
 }
 
-model Question {
-  id        String   @id @default(uuid())
-  text      String
-  quizId    String
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  order     Int
-  marks     Float    @default(1)
-  options   Option[]
-}
-
-model Option {
-  id          String       @id @default(uuid())
-  text        String
-  isCorrect   Boolean      @default(false)
-  questionId  String
-  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  order       Int
-  userOptions UserOption[]
-}
-
-model UserOption {
-  id        String   @id @default(uuid())
+model CommentReaction {
+  id        String       @id @default(uuid())
+  commentId String
+  comment   Comment      @relation(fields: [commentId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  optionId  String
-  option    Option   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      ReactionType
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 
-  @@unique([userId, optionId])
+  @@unique([commentId, userId, type])
 }
 
-model QuizAttempt {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quizId    String
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  score     Float    @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, quizId])
+enum ReactionType {
+  LIKE
+  DISLIKE
 }
 
 model Review {
@@ -416,37 +404,59 @@ model Order {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   orderItems  OrderItem[]
-  payment     Payment?
-
+  payment     Payment[]
   enrollment Enrollment[]
 }
 
 model OrderItem {
-  id        String   @id @default(uuid())
-  orderId   String
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String                      @id @default(uuid())
+  orderId          String
+  order            Order                       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  courseId         String
+  course           Course                      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime                    @default(now())
+  updatedAt        DateTime                    @updatedAt
+  amount           Decimal                     @db.Decimal(10, 2)
+  refunds          Refund[]
+  instructorShares OrderItemInstructorShare[]
+}
+
+model OrderItemInstructorShare {
+  id           String           @id @default(uuid())
+  orderItemId  String
+  orderItem    OrderItem        @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   CourseInstructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  shareAmount  Decimal          @db.Decimal(10, 2)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 }
 
 model Payment {
+  id              String           @id @default(uuid())
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerPayment ProviderPayment?
+  orderId         String
+  order           Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount          Decimal          @db.Decimal(10, 2)
+  txnId           String           @unique
+  status          PaymentStatus    @default(PENDING)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  refunds         Refund[]
+}
+
+model ProviderPayment {
   id                String          @id @default(uuid())
-  userId            String
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  paymentProvider   PaymentProvider
-  providerPaymentId String?
-  orderId           String          @unique
-  order             Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  currency          Currency        @default(INR)
-  amount            Decimal         @db.Decimal(10, 2)
-  status            PaymentStatus   @default(PENDING)
+  provider          PaymentProvider
+  providerPaymentId String // unique per provider
+  paymentId         String          @unique
+  payment           Payment         @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
-  refunds           Refund[]
 
-  @@unique([providerPaymentId, paymentProvider])
+  @@unique([provider, providerPaymentId])
 }
 
 enum PaymentStatus {
@@ -457,14 +467,16 @@ enum PaymentStatus {
 }
 
 model Refund {
-  id        String       @id @default(uuid())
-  paymentId String
-  payment   Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  amount    Decimal      @db.Decimal(10, 2)
-  reason    String?
-  status    RefundStatus @default(PENDING)
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id          String       @id @default(uuid())
+  paymentId   String
+  orderItemId String
+  orderItem   OrderItem    @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  payment     Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  amount      Decimal      @db.Decimal(10, 2)
+  reason      String?
+  status      RefundStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 enum RefundStatus {

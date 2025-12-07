@@ -11,10 +11,8 @@ import {
     TagsValue,
 } from '@/components/ui/shadcn-io/tags';
 import { CheckIcon } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { Category } from '@/generated/prisma/client';
-import { getAllCategories } from '@/lib/api/common/category';
 import { SelectorSkeleton } from "@/components/selectors/tag-selector";
+import {api} from "@/trpc/react";
 
 interface CategorySelectorProps {
     selected: string[];
@@ -23,11 +21,8 @@ interface CategorySelectorProps {
 
 export function CategorySelector({ selected, onChange }: CategorySelectorProps) {
 
-    const { data, isPending, error } = useQuery<{ categories: Category[] }>({
-        queryKey: ['categories'],
-        queryFn: () => getAllCategories(),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-    });
+
+    const { data, isPending, error } = api.common.category.getAllCategories.useQuery();
 
     if (isPending) {
         return <SelectorSkeleton />;
@@ -35,8 +30,7 @@ export function CategorySelector({ selected, onChange }: CategorySelectorProps) 
     if (error) {
         return <div>Error loading categories: {error.message}</div>;
     }
-
-    const categories = data?.categories.map((category) => ({
+    const categories = data?.map((category) => ({
         id: category.id,
         label: category.name,
     })) || [];

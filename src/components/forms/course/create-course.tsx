@@ -2,400 +2,452 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { courseSchemaFrontEnd, type CourseSchemaFrontEnd } from "@/lib/schema/course";
+import { courseSchemaFrontEnd, type CourseSchemaFrontEnd, type CourseSchemaBackEnd } from "@/lib/schema/course";
 
 import { Button } from "@/components/ui/button";
 import { TagSelector } from "@/components/selectors/tag-selector";
 import { CategorySelector } from "@/components/selectors/category-selector";
 import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import {
-    Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "@/components/ui/form";
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
-import { CourseLevel, Language, Currency } from "@/generated/prisma/enums";
+import { CourseLevel } from "@/generated/prisma/enums";
+import { LanguageSelector } from "@/components/selectors/language-selector";
 
 import { MinimalTiptapEditor } from "@/components/ui/minimal-tiptap";
-import { CldUploadWidget, CloudinaryUploadWidgetResults, CloudinaryUploadWidgetError, CldImage, CldVideoPlayer } from 'next-cloudinary';
-import { createCourse } from "@/lib/api/teacher/course";
+import { CldUploadWidget, CloudinaryUploadWidgetResults, CloudinaryUploadWidgetError } from "next-cloudinary";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
-import { FaUpload, FaCheckCircle } from "react-icons/fa";
+import { UploadCloud, CheckCircle, Info, IndianRupee } from "lucide-react";
+import { useEffect } from "react";
+import { api } from "@/trpc/react";
+import { Media } from "@/components/media/media";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 export function CreateCourseForm() {
-    const form = useForm<CourseSchemaFrontEnd>({
-        resolver: zodResolver(courseSchemaFrontEnd),
-        defaultValues: {
-            instructor: [],
-            language: Language.ENGLISH,
-            currency: Currency.USD,
-            level: CourseLevel.BEGINNER,
-            isActive: true,
-            isFree: false,
-            published: false,
-        },
-        mode: "onChange",
+  const form = useForm<CourseSchemaFrontEnd>({
+    resolver: zodResolver(courseSchemaFrontEnd),
+    defaultValues: {
+      title: "",
+      description: "Write a brief description of the course.",
+      language: [],
+      categories: [],
+      tags: [],
+      level: CourseLevel.BEGINNER,
+      isFree: false,
+      published: false,
+      offerPrice: "0",
+      price: "0",
+    },
+    mode: "onChange",
+  });
+
+  const createCourseMutation = api.teacher.course.createCourse.useMutation();
+  const media = useWatch({ control: form.control, name: "media" });
+  const isFree = useWatch({ control: form.control, name: "isFree" });
+  const price = useWatch({ control: form.control, name: "price" });
+  const offerPrice = useWatch({ control: form.control, name: "offerPrice" });
+
+  useEffect(() => {
+    if (isFree) {
+      form.setValue("price", "0");
+      form.setValue("offerPrice", "0");
+    }
+  }, [isFree, form]);
+
+  const onSubmit = async (data: CourseSchemaFrontEnd) => {
+    toast.promise(createCourseMutation.mutateAsync(data as CourseSchemaBackEnd), {
+      loading: "Creating course...",
+      success: "Course created successfully!",
+      error: (err) => `Error creating course: ${err.message}`,
     });
-    const media = useWatch({ control: form.control, name: 'media' });
+  };
 
-    const onSubmit = async (data: CourseSchemaFrontEnd) => {
-        toast.promise(
-            createCourse(data),
-            {
-                loading: 'Creating course...',
-                success: 'Course created successfully!',
-                error: (err) => `Error creating course: ${err.message}`,
-            }
-        );
-    };
+  const offerHigherThanPrice =
+    !isFree &&
+    parseFloat(offerPrice ?? "0") > parseFloat(price ?? "0") &&
+    parseFloat(price ?? "0") > 0;
 
-    return (
-        <Card className="w-full max-w-2xl mx-auto shadow-lg border border-gray-200">
-            <CardHeader>
-                <CardTitle className="text-2xl font-bold">Create New Course</CardTitle>
-                <CardDescription className="text-gray-500">Fill in the details to create a new course.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        {/* Course Info Section */}
-                        <div className="space-y-6">
-                            <h2 className="text-lg font-semibold text-gray-700">Course Info</h2>
-                            <FormField
-                                control={form.control}
-                                name="title"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Title</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Enter course title" {...field} className="focus:ring-primary" />
-                                        </FormControl>
-                                        <FormDescription>Enter the title of the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="description"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Description</FormLabel>
-                                        <FormControl>
-                                            <div className="border rounded-lg overflow-hidden">
-                                                <MinimalTiptapEditor
-                                                    {...field}
-                                                    className="min-h-64"
-                                                    editorContentClassName="p-4"
-                                                />
-                                            </div>
-                                        </FormControl>
-                                        <FormDescription>Enter a brief description of the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+  return (
+    <Card className="w-full max-w-3xl mx-auto shadow-sm border">
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-2xl font-bold">Create New Course</CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          <Info className="h-4 w-4 text-muted-foreground" />
+          Provide details, upload media, and set pricing and metadata.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+            {/* Course Info */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Course Info</h2>
+                <span className="text-muted-foreground text-sm">Basic details</span>
+              </div>
+              <div className="grid gap-6">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Mastering TypeScript"
+                          {...field}
+                          className="focus:ring-primary"
+                        />
+                      </FormControl>
+                      <FormDescription>Clear, concise course title.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <div className="rounded-lg border bg-card">
+                          <MinimalTiptapEditor
+                            {...field}
+                            className="min-h-64"
+                            editorContentClassName="p-4"
+                          />
                         </div>
-                        <Separator />
-                        {/* Media Section */}
-                        <div className="space-y-6">
-                            <h2 className="text-lg font-semibold text-gray-700">Course Media</h2>
-                            {
-                                media?.type === 'IMAGE' && media?.url ? (
-                                    <div className="w-full flex justify-center items-center">
-                                        <CldImage
-                                            src={media.url}
-                                            width={400}
-                                            height={300}
-                                            alt="Course Media"
-                                            className="rounded-md shadow"
-                                        />
-                                    </div>
-                                ) : media?.type === 'VIDEO' && media?.url ? (
-                                    <div className="w-full flex justify-center items-center">
-                                        <CldVideoPlayer
-                                            src={media.url}
-                                            width={400}
-                                            height={300}
-                                            className="rounded-md w-44 h-44 shadow"
-                                        />
-                                    </div>
-                                ) : null
-                            }
-                            <FormField
-                                control={form.control}
-                                name="media"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Upload Media</FormLabel>
-                                        <FormControl>
-                                            <CldUploadWidget
-                                                signatureEndpoint="/api/sign-cloudinary-params"
-                                                uploadPreset='educart'
-                                                onSuccess={(result: CloudinaryUploadWidgetResults) => {
-                                                    if (typeof result.info !== 'string' && result.info?.secure_url && result.info.resource_type) {
-                                                        field.onChange({
-                                                            url: result.info.secure_url,
-                                                            type: result.info.resource_type === 'image' ? 'IMAGE' : 'VIDEO',
-                                                        });
-                                                        toast.success("Media uploaded successfully!");
-                                                    }
-                                                }}
-                                                onError={(error: CloudinaryUploadWidgetError) => {
-                                                    toast.error(`Image upload failed: ${error}`);
-                                                }}
-                                                options={{
-                                                    maxFiles: 1,
-                                                    maxImageFileSize: 5 * 1024 * 1024, // 5MB
-                                                    maxVideoFileSize: 50 * 1024 * 1024, // 50MB
-                                                    sources: ['local', 'camera'],
-                                                    cropping: true,
-                                                    folder: 'educart/courses',
-                                                    resourceType: 'auto',
-                                                    clientAllowedFormats: ['png', 'jpeg', 'jpg', 'mp4'],
-                                                    multiple: false,
-                                                }}
-                                            >
-                                                {({ open }) => (
-                                                    <Button
-                                                        type="button"
-                                                        variant="outline"
-                                                        onClick={() => open?.()}
-                                                        className="w-full flex items-center gap-2"
-                                                    >
-                                                        <FaUpload className="text-primary" />
-                                                        Upload Media
-                                                    </Button>
-                                                )}
-                                            </CldUploadWidget>
-                                        </FormControl>
-                                        <FormDescription>Upload an image or video for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                      </FormControl>
+                      <FormDescription>
+                        Short overview to help learners understand what they’ll gain.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            <Separator />
+
+            {/* Media */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Media</h2>
+                <span className="text-muted-foreground text-sm">Thumbnail or intro video</span>
+              </div>
+
+              {media && (
+                <AspectRatio ratio={16 / 9} className="rounded-lg border overflow-hidden bg-muted">
+                  <Media
+                    key={media.url}
+                    url={media.url}
+                    type={media.type}
+                    className="w-full h-full object-cover"
+                    alt="Course Media"
+                  />
+                </AspectRatio>
+              )}
+
+              <FormField
+                control={form.control}
+                name="media"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Upload Media</FormLabel>
+                    <FormControl>
+                      <CldUploadWidget
+                        signatureEndpoint="/api/sign-cloudinary-params"
+                        uploadPreset="educart"
+                        onSuccess={(result: CloudinaryUploadWidgetResults) => {
+                          if (
+                            typeof result.info !== "string" &&
+                            result.info?.secure_url &&
+                            result.info.resource_type
+                          ) {
+                            field.onChange({
+                              url: result.info.secure_url,
+                              type: result.info.resource_type === "image" ? "IMAGE" : "VIDEO",
+                            });
+                            toast.success("Media uploaded successfully!");
+                          }
+                        }}
+                        onError={(error: CloudinaryUploadWidgetError) => {
+                          toast.error(`Image upload failed: ${error}`);
+                        }}
+                        options={{
+                          maxFiles: 1,
+                          maxImageFileSize: 5 * 1024 * 1024,
+                          maxVideoFileSize: 50 * 1024 * 1024,
+                          sources: ["local", "camera"],
+                          cropping: true,
+                          folder: "educart/courses",
+                          resourceType: "auto",
+                          clientAllowedFormats: ["png", "jpeg", "jpg", "mp4"],
+                          multiple: false,
+                        }}
+                      >
+                        {({ open }) => (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => open?.()}
+                            className="w-full flex items-center gap-2 cursor-pointer"
+                          >
+                            <UploadCloud className="text-primary h-4 w-4" />
+                            Upload or Replace Media
+                          </Button>
+                        )}
+                      </CldUploadWidget>
+                    </FormControl>
+                    <FormDescription>Recommended 16:9 image or short intro video.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </section>
+
+            <Separator />
+
+            {/* Settings */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Settings</h2>
+                <span className="text-muted-foreground text-sm">Publishing and access</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="published"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Published</FormLabel>
+                        <FormDescription>Visible to learners.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="isFree"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel>Free</FormLabel>
+                        <FormDescription>No payment required.</FormDescription>
+                      </div>
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            <Separator />
+
+            {/* Pricing */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Pricing</h2>
+                <span className="text-muted-foreground text-sm">Set base and offer prices</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            inputMode="decimal"
+                            placeholder="e.g., 999"
+                            {...field}
+                            disabled={isFree}
+                            className="pl-8 focus:ring-primary"
+                          />
                         </div>
-                        <Separator />
-                        {/* Settings Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="published"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Published</FormLabel>
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                                className="accent-primary"
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Mark the course as published.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="isActive"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Active</FormLabel>
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                                className="accent-primary"
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Mark the course as active.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="isFree"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Free</FormLabel>
-                                        <FormControl>
-                                            <Checkbox
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                                className="accent-primary"
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Mark the course as free.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                      </FormControl>
+                      <FormDescription>Base price (INR). Set to 0 for free courses.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="offerPrice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Offer Price</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            inputMode="decimal"
+                            placeholder="e.g., 799"
+                            {...field}
+                            disabled={isFree}
+                            className="pl-8 focus:ring-primary"
+                          />
                         </div>
-                        <Separator />
-                        {/* Pricing Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="price"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Price</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Course Price" {...field} className="focus:ring-primary" />
-                                        </FormControl>
-                                        <FormDescription>Set the price for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="offerPrice"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Offer Price</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Offer Price (optional)" {...field} className="focus:ring-primary" />
-                                        </FormControl>
-                                        <FormDescription>Set a discounted price for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <Separator />
-                        {/* Selectors Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="categories"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Categories</FormLabel>
-                                        <FormControl>
-                                            <CategorySelector
-                                                selected={field.value ?? []}
-                                                onChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Select categories for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="tags"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Tags</FormLabel>
-                                        <FormControl>
-                                            <TagSelector
-                                                selected={field.value ?? []}
-                                                onChange={field.onChange}
-                                            />
-                                        </FormControl>
-                                        <FormDescription>Select tags for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <Separator />
-                        {/* Language & Currency Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                                control={form.control}
-                                name="language"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Language</FormLabel>
-                                        <FormControl>
-                                            <Select defaultValue={field.value} onValueChange={field.onChange} {...field}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Language" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectGroup>
-                                                        <SelectLabel>Language</SelectLabel>
-                                                        {Object.values(Language).map((language) => (
-                                                            <SelectItem key={language} value={language}>
-                                                                {language}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-                                        <FormDescription>Set the language for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="currency"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Currency</FormLabel>
-                                        <FormControl>
-                                            <Select defaultValue={field.value} onValueChange={field.onChange} {...field}>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select Currency" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectGroup>
-                                                        <SelectLabel>Currency</SelectLabel>
-                                                        {Object.values(Currency).map((currency) => (
-                                                            <SelectItem key={currency} value={currency}>
-                                                                {currency}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectGroup>
-                                                </SelectContent>
-                                            </Select>
-                                        </FormControl>
-                                        <FormDescription>Set the currency for the course.</FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <Separator />
-                        <Button
-                            type="submit"
-                            disabled={!form.formState.isValid || form.formState.isSubmitting}
-                            className="w-full cursor-pointer bg-primary text-white hover:bg-primary/90 transition-all flex items-center gap-2"
-                        >
-                            <FaCheckCircle />
-                            Create Course
-                        </Button>
-                    </form>
-                </Form>
-            </CardContent>
-        </Card>
-    );
+                      </FormControl>
+                      <FormDescription>Optional discount price (≤ base price).</FormDescription>
+                      {offerHigherThanPrice && (
+                        <p className="text-sm text-destructive mt-2">
+                          Offer price cannot be greater than base price.
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            <Separator />
+
+            {/* Metadata */}
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Metadata</h2>
+                <span className="text-muted-foreground text-sm">Organize and categorize</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="categories"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Categories</FormLabel>
+                      <FormControl>
+                        <CategorySelector selected={field.value ?? []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormDescription>Choose one or more categories.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tags"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tags</FormLabel>
+                      <FormControl>
+                        <TagSelector selected={field.value ?? []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormDescription>Add descriptive tags.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="language"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Language</FormLabel>
+                      <FormControl>
+                        <LanguageSelector selected={field.value ?? []} onChange={field.onChange} />
+                      </FormControl>
+                      <FormDescription>Primary languages for the course.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="level"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Level</FormLabel>
+                      <FormControl>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <SelectTrigger className="focus:ring-primary">
+                            <SelectValue placeholder="Select Level" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Level</SelectLabel>
+                              {Object.values(CourseLevel).map((level) => (
+                                <SelectItem key={level} value={level}>
+                                  {level}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormDescription>Difficulty level of the course.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </section>
+
+            {/* Submit */}
+            <div className="sticky bottom-0 bg-card/80 backdrop-blur supports-backdrop-filter:bg-card/60 pt-4">
+              <Button
+                type="submit"
+                disabled={
+                  !form.formState.isValid ||
+                  form.formState.isSubmitting ||
+                  offerHigherThanPrice
+                }
+                className="w-full cursor-pointer"
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Create Course
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
 }

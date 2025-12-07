@@ -10,7 +10,10 @@ export const QueryProvider = ({ children }: { children: ReactNode }) => {
     const [isMounted, setIsMounted] = useState(false);
     const [queryClient] = useState(() => new QueryClient());
     useEffect(() => {
-        setIsMounted(true);
+        const id = setTimeout(() => {
+            setIsMounted(true);
+        }, 0);
+        return () => clearTimeout(id);
     }, []);
 
     if (!isMounted) {

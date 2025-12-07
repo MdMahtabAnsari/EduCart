@@ -1,9 +1,13 @@
-import {prisma} from '@/lib/db/prisma';
+import { prisma } from '@/lib/db/prisma';
 import { faker } from '@faker-js/faker';
+import ISO6391 from 'iso-639-1';
 
 
 async function main() {
     //   create 10 categories with unique names
+    await prisma.language.deleteMany();
+    await prisma.tag.deleteMany();
+    await prisma.category.deleteMany();
     const categories = [];
     const categoryNames = new Set<string>();
     while (categoryNames.size < 10) {
@@ -32,6 +36,10 @@ async function main() {
         }
     }
     console.log(`Created ${categories.length} categories and ${tags.length} tags.`);
+    const languages = ISO6391.getAllCodes().map(code => ({ code }));
+    await prisma.language.createMany({
+        data: languages,
+    });
 }
 
 main()

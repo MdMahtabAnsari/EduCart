@@ -11,10 +11,8 @@ import {
     TagsValue,
 } from '@/components/ui/shadcn-io/tags';
 import { CheckIcon } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { Tag } from '@/generated/prisma/client';
-import { getAllTags } from '@/lib/api/common/tag';
 import { Skeleton } from '@/components/ui/skeleton';
+import { api } from "@/trpc/react";
 
 interface TagSelectorProps {
     selected: string[];
@@ -23,24 +21,20 @@ interface TagSelectorProps {
 
 export function TagSelector({ selected, onChange }: TagSelectorProps) {
 
-    const { data, isPending, error } = useQuery<{ tags: Tag[] }>({
-        queryKey: ['tags'],
-        queryFn: () => getAllTags(),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-    });
+
+    const { data, isPending, error } = api.common.tag.getAllTags.useQuery();
 
     if (isPending) {
-       return <SelectorSkeleton />;
+        return <SelectorSkeleton />;
     }
     if (error) {
         return <div>Error loading tags: {error.message}</div>;
     }
 
-    const tags = data?.tags.map((tag) => ({
+    const tags = data?.map((tag) => ({
         id: tag.id,
         label: tag.name,
     })) || [];
-
     const handleSelect = (tagId: string) => {
         if (!selected.includes(tagId)) {
             onChange([...selected, tagId]);

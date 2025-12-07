@@ -7,6 +7,7 @@ import { SearchForm } from "@/components/search-form"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/components/ui/sidebar"
+import { ModeToggle } from "@/components/toggle/mode-toggle";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar()
@@ -25,6 +26,7 @@ export function SiteHeader() {
         <Separator orientation="vertical" className="mr-2 h-4" />
         <DynamicBreadcrumb />
         <SearchForm className="w-full sm:ml-auto sm:w-auto" />
+        <ModeToggle />
       </div>
     </header>
   )

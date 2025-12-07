@@ -2,7 +2,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { sectionSchema, type SectionSchema } from "@/lib/schema/section";
+import { createSectionSchema, CreateSectionSchema } from "@/lib/schema/section";
+import { api } from "@/trpc/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,69 +24,94 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { FaPlusCircle } from "react-icons/fa";
+import { Plus } from "lucide-react";
 
-interface CreateSectionFormProps {
+export interface CreateSectionFormProps {
     courseId: string;
+    onSubmission?: () => void;
 }
 
-export function CreateSectionForm({ courseId }: CreateSectionFormProps) {
-    const form = useForm<SectionSchema>({
-        resolver: zodResolver(sectionSchema),
-        mode: "onChange",
-    });
+export function CreateSectionForm({ courseId, onSubmission }: CreateSectionFormProps) {
 
-    const onSubmit = (data: SectionSchema) => {
-        toast.success(`Section "${data.title}" created successfully!`);
-        form.reset();
-    };
 
     return (
-        <Card className="w-full max-w-lg mx-auto shadow-lg border border-gray-200 bg-white h-fit">
+        <Card className="w-full max-w-lg mx-auto h-fit">
             <CardHeader>
                 <CardTitle className="text-2xl font-bold text-primary flex items-center gap-2">
-                    <FaPlusCircle className="text-primary" />
+                    <Plus className="text-primary" />
                     Create New Section
                 </CardTitle>
-                <CardDescription className="text-gray-500">
+                <CardDescription>
                     Add a new section to your course.
                 </CardDescription>
             </CardHeader>
             <Separator />
             <CardContent>
-                <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                        <FormField
-                            control={form.control}
-                            name="title"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-base font-medium">Section Title</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            placeholder="Enter section title"
-                                            {...field}
-                                            className="focus:ring-primary focus:border-primary/70 transition-all"
-                                        />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Give your section a clear, descriptive name.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button
-                            type="submit"
-                            disabled={!form.formState.isValid || form.formState.isSubmitting}
-                            className="w-full bg-primary text-white hover:bg-primary/90 transition-all flex items-center gap-2 py-2 text-lg font-semibold rounded-md shadow"
-                        >
-                            <FaPlusCircle />
-                            Create Section
-                        </Button>
-                    </form>
-                </Form>
+                <SectionForm courseId={courseId} onSubmission={onSubmission} />
             </CardContent>
         </Card>
     );
+}
+
+
+export function SectionForm({ courseId, onSubmission }: CreateSectionFormProps) {
+    const form = useForm<CreateSectionSchema>({
+        resolver: zodResolver(createSectionSchema),
+        defaultValues: {
+            courseId,
+            title: "",
+        },
+        mode: "onChange",
+    });
+    const createSectionMutation = api.teacher.section.createSection.useMutation();
+
+    const onSubmit = async (data: CreateSectionSchema) => {
+        toast.promise(
+            createSectionMutation.mutateAsync(data, {
+                onSuccess: () => {
+                    onSubmission?.();
+                }
+            }),
+            {
+                loading: "Creating section...",
+                success: "Section created successfully!",
+                error: (err) => `Error: ${err.message}`,
+            }
+        );
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-base font-medium">Section Title</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter section title"
+                                    {...field}
+                                    className="focus:ring-primary focus:border-primary/70 transition-all"
+                                />
+                            </FormControl>
+                            <FormDescription>
+                                Give your section a clear, descriptive name.
+                            </FormDescription>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <Button
+                    type="submit"
+                    disabled={!form.formState.isValid || form.formState.isSubmitting}
+                    className="w-full cursor-pointer"
+                >
+                    <Plus />
+                    Create Section
+                </Button>
+            </form>
+        </Form>
+    )
 }

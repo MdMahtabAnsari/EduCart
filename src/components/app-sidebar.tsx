@@ -4,7 +4,7 @@ import {
     Award,
     BarChart3,
     BookOpen,
-    Command,
+    BookOpenText,
     CreditCard,
     DollarSign,
     Heart,
@@ -12,8 +12,10 @@ import {
     LayoutDashboard,
     Settings2,
     Star,
-    Users
+    Users,
+    ShoppingCart
 } from "lucide-react"
+import Link from "next/link"
 
 
 import {NavMain} from "@/components/nav-main"
@@ -259,13 +261,17 @@ export const userNavMain = [
         ],
     },
     {
-        title: "My Courses",
+        title: "Courses",
         url: "/user/courses",
         icon: BookOpen,
         items: [
             {
-                title: "Enrolled",
-                url: "/user/courses/enrolled",
+                title: "All Courses",
+                url: "/user/courses",
+            },
+            {
+                title: "Enrollments",
+                url: "/user/courses/enrollments",
             },
             {
                 title: "In Progress",
@@ -300,6 +306,17 @@ export const userNavMain = [
             {
                 title: "Invoices",
                 url: "/user/orders/invoices",
+            },
+        ],
+    },
+    {
+        title: "Cart",
+        url: "/user/carts",
+        icon: ShoppingCart,
+        items: [
+            {
+                title: "My Cart",
+                url: "/user/carts",
             },
         ],
     },
@@ -348,6 +365,7 @@ export const userNavMain = [
 
 export function AppSidebar({role, user, ...props}: AppSidebarProps) {
     const navItems = role === "admin" ? adminNavMain : role === "teacher" ? teacherNavMain : userNavMain;
+    const pannelName = role === "admin" ? "Admin" : role === "teacher" ? "Teacher" : "User";
     return (
         <Sidebar
             className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -357,16 +375,16 @@ export function AppSidebar({role, user, ...props}: AppSidebarProps) {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <a href="#">
+                            <Link href={`/${role}/dashboard`}>
                                 <div
                                     className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                                    <Command className="size-4"/>
+                                    <BookOpenText className="size-4"/>
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-medium">Acme Inc</span>
-                                    <span className="truncate text-xs">Enterprise</span>
+                                    <span className="truncate font-medium">EduCart</span>
+                                    <span className="text-xs text-muted-foreground">{pannelName} Panel</span>
                                 </div>
-                            </a>
+                            </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
                 </SidebarMenu>

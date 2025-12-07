@@ -12,6 +12,7 @@ import { InfoCircledIcon, TrashIcon } from "@radix-ui/react-icons"
 import { ImageOverlay } from "./image-overlay"
 import { Spinner } from "../../../components/spinner"
 import type { UploadReturnType } from "../image"
+import Image from "next/image"
 
 const MAX_HEIGHT = 600
 const MIN_HEIGHT = 120
@@ -76,8 +77,10 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({
   const aspectRatio =
     imageState.naturalSize.width / imageState.naturalSize.height
   const maxWidth = MAX_HEIGHT * aspectRatio
+  // eslint-disable-next-line react-hooks/refs
   const containerMaxWidth = containerRef.current
     ? parseFloat(
+        // eslint-disable-next-line react-hooks/refs
         getComputedStyle(containerRef.current).getPropertyValue(
           "--editor-width"
         )
@@ -260,7 +263,7 @@ export const ImageViewBlock: React.FC<NodeViewProps> = ({
                   setImageState((prev) => ({ ...prev, isZoomed: false }))
                 }
               >
-                <img
+                <Image
                   className={cn(
                     "h-auto rounded object-contain transition-shadow",
                     {

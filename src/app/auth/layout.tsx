@@ -21,7 +21,7 @@ export default async function Layout({
         return redirect("/");
     }
     return (
-        <div className="flex items-center justify-center w-screen h-screen">
+        <div className="flex items-center justify-center w-full h-full">
             {children}
         </div>
     );

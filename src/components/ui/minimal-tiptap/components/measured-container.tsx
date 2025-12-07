@@ -15,6 +15,8 @@ export const MeasuredContainer = <T extends React.ElementType>({
   ...props
 }: MeasuredContainerProps<T> & React.ComponentProps<T>) => {
   const innerRef = React.useRef<HTMLElement>(null)
+
+  // eslint-disable-next-line react-hooks/refs
   const rect = useContainerSize(innerRef.current)
 
   const customStyle = {

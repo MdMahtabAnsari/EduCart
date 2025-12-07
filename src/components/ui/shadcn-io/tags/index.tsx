@@ -1,5 +1,4 @@
 'use client';
-
 import { XIcon } from 'lucide-react';
 import {
   type ComponentProps,
@@ -201,7 +200,7 @@ export type TagsEmptyProps = ComponentProps<typeof CommandEmpty>;
 
 export const TagsEmpty = ({
   children,
-  className,
+  // className,
   ...props
 }: TagsEmptyProps) => (
   <CommandEmpty {...props}>{children ?? 'No tags found.'}</CommandEmpty>

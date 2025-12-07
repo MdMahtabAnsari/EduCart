@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             return NextResponse.json({ error: fromError(parsedId.error).message }, { status: 400 });
         }
         const course = await prisma.course.findUnique({
-            where: { id: parsedId.data, isDeleted: false },
+            where: { id: parsedId.data },
             include: {
                 categories: {
                     include: { category: true }

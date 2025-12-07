@@ -36,21 +36,10 @@ export async function POST(request: NextRequest) {
                 published: courseData.published,
                 price: parseFloat(courseData.price),
                 level: courseData.level,
-                isActive: courseData.isActive,
                 offerPrice: courseData.offerPrice ? parseFloat(courseData.offerPrice) : null,
                 isFree: courseData.isFree,
-                language: courseData.language,
-                currency: courseData.currency,
             },
         });
-        if(courseData.instructor.length > 0){
-            await prisma.courseInstructor.createMany({
-                data: courseData.instructor.map((instructorId) => ({
-                    courseId: course.id,
-                    userId: instructorId,
-                })),
-            });
-        }
         await prisma.courseCategory.createMany({
             data: courseData.categories.map((categoryId) => ({
                 courseId: course.id,

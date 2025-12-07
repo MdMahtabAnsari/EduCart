@@ -12,6 +12,7 @@ import {
     Button,
     Hr,
     Link,
+    Tailwind,
 } from '@react-email/components';
 
 interface WelcomeEmailProps {
@@ -28,105 +29,53 @@ export default function WelcomeEmail({ user }: WelcomeEmailProps) {
         <Html>
             <Head />
             <Preview>Welcome to {brand}! 🎉</Preview>
-            <Body style={styles.main}>
-                <Container style={styles.container}>
-                    <Section>
-                        <Heading style={styles.h1}>Welcome to {brand} 🎉</Heading>
+            <Tailwind>
+                <Body className="bg-[#f6f9fc] py-6 font-sans">
+                    <Container className="mx-auto w-full max-w-[600px] rounded-lg border border-[#eaeaea] bg-white p-8">
+                        <Section>
+                            <Heading className="m-0 mb-4 text-2xl font-bold leading-[1.3] text-gray-900">
+                                Welcome to {brand} 🎉
+                            </Heading>
 
-                        <Text style={styles.text}>
-                            Hi {displayName}, we’re excited to have you on board. Your account is all set!
-                        </Text>
+                            <Text className="m-0 mb-4 text-sm leading-relaxed text-gray-700">
+                                Hi {displayName}, we’re excited to have you on board. Your account is all set!
+                            </Text>
 
-                        <Text style={styles.text}>
-                            Get started by exploring your dashboard, managing your courses, and personalizing your profile.
-                        </Text>
+                            <Text className="m-0 mb-4 text-sm leading-relaxed text-gray-700">
+                                Get started by exploring your dashboard, managing your courses, and personalizing your profile.
+                            </Text>
 
-                        <Section style={styles.ctaSection}>
-                            <Button href={appUrl} style={styles.button}>
-                                Get started
-                            </Button>
+                            <Section className="my-6 text-center">
+                                <Button
+                                    href={appUrl}
+                                    className="inline-block rounded-md bg-green-600 px-5 py-3 text-sm font-semibold text-white no-underline"
+                                >
+                                    Get started
+                                </Button>
+                            </Section>
+
+                            <Text className="m-0 mb-4 text-sm leading-relaxed text-gray-700">
+                                Need help? Visit our{' '}
+                                <Link href="https://educart.example.com/help" className="text-[13px] text-blue-600 underline">
+                                    Help Center
+                                </Link>{' '}
+                                or email us at{' '}
+                                <Link href="mailto:support@educart.example.com" className="text-[13px] text-blue-600 underline">
+                                    support@educart.example.com
+                                </Link>
+                                .
+                            </Text>
+
+                            <Hr className="my-6 border-gray-200" />
+
+                            <Text className="m-0 mb-1 text-xs text-gray-500">
+                                You’re receiving this email because you created an account on {brand}.
+                            </Text>
+                            <Text className="m-0 text-xs text-gray-400">© {year} {brand}. All rights reserved.</Text>
                         </Section>
-
-                        <Text style={styles.text}>
-                            Need help? Visit our{' '}
-                            <Link href="https://educart.example.com/help" style={styles.link}>Help Center</Link>{' '}
-                            or email us at{' '}
-                            <Link href="mailto:support@educart.example.com" style={styles.link}>support@educart.example.com</Link>.
-                        </Text>
-
-                        <Hr style={styles.hr} />
-
-                        <Text style={styles.muted}>
-                            You’re receiving this email because you created an account on {brand}.
-                        </Text>
-                        <Text style={styles.footer}>© {year} {brand}. All rights reserved.</Text>
-                    </Section>
-                </Container>
-            </Body>
+                    </Container>
+                </Body>
+            </Tailwind>
         </Html>
     );
 }
-
-export const styles: Record<string, React.CSSProperties> = {
-    main: {
-        backgroundColor: '#f6f9fc',
-        padding: '24px 0',
-        fontFamily:
-            '-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,Apple Color Emoji,Segoe UI Emoji',
-    },
-    container: {
-        backgroundColor: '#ffffff',
-        borderRadius: 8,
-        border: '1px solid #eaeaea',
-        padding: '32px',
-        width: '100%',
-        maxWidth: '600px',
-        margin: '0 auto',
-    },
-    h1: {
-        margin: '0 0 16px',
-        fontSize: '24px',
-        lineHeight: '1.3',
-        color: '#111827',
-        fontWeight: 700,
-    },
-    text: {
-        margin: '0 0 16px',
-        fontSize: '14px',
-        lineHeight: '1.6',
-        color: '#374151',
-    },
-    ctaSection: {
-        margin: '24px 0',
-        textAlign: 'center',
-    },
-    button: {
-        backgroundColor: '#16a34a',
-        color: '#ffffff',
-        fontSize: '14px',
-        fontWeight: 600,
-        textDecoration: 'none',
-        padding: '12px 20px',
-        borderRadius: 6,
-        display: 'inline-block',
-    },
-    link: {
-        color: '#2563eb',
-        fontSize: '13px',
-        textDecoration: 'underline',
-    },
-    hr: {
-        borderColor: '#e5e7eb',
-        margin: '24px 0',
-    },
-    muted: {
-        color: '#6b7280',
-        fontSize: '12px',
-        margin: '0 0 4px',
-    },
-    footer: {
-        color: '#9ca3af',
-        fontSize: '12px',
-        margin: 0,
-    },
-};

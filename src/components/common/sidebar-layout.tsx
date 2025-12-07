@@ -21,7 +21,7 @@ export function SidebarLayout({user,role,children}:SidebarLayoutProps) {
                 <div className="flex flex-1">
                     <AppSidebar user={user} role={role}/>
                     <SidebarInset>
-                        <div className="flex flex-1 flex-col gap-4 p-4">
+                        <div className="flex w-full h-full justify-center items-center gap-4 p-4">
                             {children}
                             <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
                         </div>

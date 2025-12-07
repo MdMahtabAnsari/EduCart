@@ -25,11 +25,12 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
+import Link from "next/link";
 
 
 export const handleSocialSignIn = (provider: string) => {
     toast.promise(
-        authClient.signIn.social({ provider }),
+        authClient.signIn.social({ provider,callbackURL:'/user/dashboard' }),
         {
             loading: `Signing in with ${provider}...`,
             success: `Signed in with ${provider} successfully!`,
@@ -41,12 +42,17 @@ export function SignInForm() {
 
     const form = useForm<SignInSchema>({
         resolver: zodResolver(signInSchema),
+        defaultValues:{
+            email: '',
+            password: '',
+
+        },
         mode: "onChange",
     });
 
     const onSubmit = (data: SignInSchema) => {
         toast.promise(
-            authClient.signIn.email(data),
+            authClient.signIn.email({ ...data, callbackURL:'/user/dashboard'}),
             {
                 loading: "Signing in...",
                 success: "Signed in successfully!",
@@ -56,7 +62,7 @@ export function SignInForm() {
     }
 
     return (
-        <Card className="w-full max-w-lg mx-auto h-fit my-auto">
+        <Card className="w-full max-w-2xl mx-auto">
             <CardHeader>
                 <CardTitle>Sign In</CardTitle>
                 <CardDescription>Enter your credentials to access your account.</CardDescription>
@@ -101,16 +107,21 @@ export function SignInForm() {
                     </form>
                 </Form>
             </CardContent>
-            <CardFooter className="flex flex-col gap-2">
-                <Button variant="outline" className="w-full mb-2 cursor-pointer" onClick={() => handleSocialSignIn("google")}>
-                    <FaGoogle className="mr-2" /> Sign in with Google
+           <CardFooter className="flex flex-col gap-2">
+                <Link href="/auth/signup" >
+                    <Button variant="link" size="sm" className="cursor-pointer">Don&apos;t have an account? Sign Up</Button>
+                </Link>
+                <div className="w-full flex justify-center items-center">
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("google")}>
+                    <FaGoogle />
                 </Button>
-                <Button variant="outline" className="w-full mb-2 cursor-pointer" onClick={() => handleSocialSignIn("github")}>
-                    <FaGithub className="mr-2" /> Sign in with GitHub
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("github")}>
+                    <FaGithub />
                 </Button>
-                <Button variant="outline" className="w-full cursor-pointer" onClick={() => handleSocialSignIn("discord")}>
-                    <FaDiscord className="mr-2" /> Sign in with Discord
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("discord")}>
+                    <FaDiscord />
                 </Button>
+                </div>
             </CardFooter>
         </Card>
     );

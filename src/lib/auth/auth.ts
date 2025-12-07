@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db/prisma"
 import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail, sendChangeEmail, sendOTPEmail, sendMagicLinkEmail, } from "@/lib/helpers/emails";
 import { twoFactor, username, magicLink, admin as adminPlugin, lastLoginMethod, openAPI } from "better-auth/plugins"
 import { nextCookies } from "better-auth/next-js";
-import { passkey } from "better-auth/plugins/passkey"
+import { passkey } from "@better-auth/passkey"
 import { username as usernameSchema } from "@/lib/schema/common";
 import { admin, user, teacher, ac } from "@/lib/auth/permissions";
 
@@ -107,4 +107,4 @@ export const auth = betterAuth({
         }
     },
     secret: process.env.BETTER_AUTH_SECRET!,
-}); 
+});

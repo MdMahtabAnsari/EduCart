@@ -1,6 +1,6 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm ,useWatch} from "react-hook-form"
+import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
 import { signUpSchema, type SignUpSchema } from "@/lib/schema/auth"
 
@@ -27,15 +27,22 @@ import {
 } from "@/components/ui/form"
 import { Textarea } from "@/components/ui/textarea";
 import { handleSocialSignIn } from "@/components/forms/signIn";
-import { CldUploadWidget,CloudinaryUploadWidgetResults,CloudinaryUploadWidgetError,CldImage } from 'next-cloudinary';
+import { CldUploadWidget, CloudinaryUploadWidgetResults, CloudinaryUploadWidgetError, CldImage } from 'next-cloudinary';
 import { ImageZoom } from '@/components/ui/shadcn-io/image-zoom';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import Link from "next/link";
 
 
 export function SignUpForm() {
 
     const form = useForm<SignUpSchema>({
         resolver: zodResolver(signUpSchema),
+        defaultValues: {
+            name: '',
+            username: '',
+            email: '',
+            password: '',
+        },
         mode: "onChange",
     });
 
@@ -55,7 +62,7 @@ export function SignUpForm() {
 
 
     return (
-        <Card className="w-full max-w-lg mx-auto h-fit my-auto">
+        <Card className="w-full max-w-2xl">
             <CardHeader>
                 <CardTitle className="text-2xl">Create an Account</CardTitle>
                 <CardDescription>Create your account to get started!</CardDescription>
@@ -63,27 +70,27 @@ export function SignUpForm() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                            {image ? (
-                                <ImageZoom className="w-full h-full">
-                                    <CldImage
-                                        src={image}
-                                        alt="Profile Image"
-                                        width={150}
-                                        height={150}
-                                        className="w-36 h-36 mx-auto mb-4 rounded-full object-cover cursor-pointer"
-                                    />
-                                </ImageZoom>
+                        {image ? (
+                            <ImageZoom className="w-full h-full">
+                                <CldImage
+                                    src={image}
+                                    alt="Profile Image"
+                                    width={150}
+                                    height={150}
+                                    className="w-36 h-36 mx-auto mb-4 rounded-full object-cover cursor-pointer"
+                                />
+                            </ImageZoom>
 
-                            ):(
-                                <Avatar className="w-36 h-36 mx-auto mb-4">
-                                    <AvatarImage src="" alt="Profile Image" />
-                                    <AvatarFallback>
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
-                                    </AvatarFallback>
-                                </Avatar>
-                            )}
+                        ) : (
+                            <Avatar className="w-36 h-36 mx-auto mb-4">
+                                <AvatarImage src="" alt="Profile Image" />
+                                <AvatarFallback>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                    </svg>
+                                </AvatarFallback>
+                            </Avatar>
+                        )}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
@@ -119,6 +126,7 @@ export function SignUpForm() {
                                 )}
                             />
                         </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
                             name="email"
@@ -151,7 +159,7 @@ export function SignUpForm() {
                                 </FormItem>
                             )}
                         />
-
+                        </div>
                         <FormField
                             control={form.control}
                             name="bio"
@@ -178,14 +186,14 @@ export function SignUpForm() {
                                         <CldUploadWidget
                                             signatureEndpoint="/api/sign-cloudinary-params"
                                             uploadPreset='educart'
-                                            onSuccess={(result:CloudinaryUploadWidgetResults) => {
-                                                if(typeof result.info !== 'string' && result.info?.secure_url){
+                                            onSuccess={(result: CloudinaryUploadWidgetResults) => {
+                                                if (typeof result.info !== 'string' && result.info?.secure_url) {
                                                     field.onChange(result.info.secure_url);
                                                     toast.success("Image uploaded successfully!");
                                                 }
                                             }}
 
-                                            onError={(error:CloudinaryUploadWidgetError)=>{
+                                            onError={(error: CloudinaryUploadWidgetError) => {
                                                 toast.error(`Image upload failed: ${error}`);
                                             }}
                                             options={{
@@ -223,15 +231,20 @@ export function SignUpForm() {
                 </Form>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-                <Button variant="outline" className="w-full mb-2 cursor-pointer" onClick={() => handleSocialSignIn("google")}>
-                    <FaGoogle className="mr-2" /> Sign up with Google
+                <Link href="/auth/signin" >
+                    <Button variant="link" size="sm" className="cursor-pointer">Already have an account? Sign In</Button>
+                </Link>
+                <div className="w-full flex justify-center items-center">
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("google")}>
+                    <FaGoogle />
                 </Button>
-                <Button variant="outline" className="w-full mb-2 cursor-pointer" onClick={() => handleSocialSignIn("github")}>
-                    <FaGithub className="mr-2" /> Sign up with GitHub
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("github")}>
+                    <FaGithub />
                 </Button>
-                <Button variant="outline" className="w-full cursor-pointer" onClick={() => handleSocialSignIn("discord")}>
-                    <FaDiscord className="mr-2" /> Sign up with Discord
+                <Button variant="ghost" size="icon-lg" className="cursor-pointer" onClick={() => handleSocialSignIn("discord")}>
+                    <FaDiscord />
                 </Button>
+                </div>
             </CardFooter>
         </Card>
     );

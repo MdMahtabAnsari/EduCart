@@ -1,5 +1,6 @@
 import { createAuthClient } from "better-auth/react";
-import { inferAdditionalFields,twoFactorClient,usernameClient,magicLinkClient,passkeyClient,adminClient,lastLoginMethodClient } from "better-auth/client/plugins";
+import { inferAdditionalFields,twoFactorClient,usernameClient,magicLinkClient,adminClient,lastLoginMethodClient } from "better-auth/client/plugins";
+import { passkeyClient } from "@better-auth/passkey/client"
 import {auth} from "@/lib/auth/auth";
 import {ac,user,teacher,admin} from "@/lib/auth/permissions";
 

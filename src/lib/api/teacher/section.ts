@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api/api";
-import { SectionSchema } from "@/lib/schema/section";
+import { CreateSectionSchema } from "@/lib/schema/section";
 
-export const createSection = async (data: SectionSchema) => {
+export const createSection = async (data: CreateSectionSchema) => {
     try {
         const response = await apiClient.post('/api/v1/teacher/sections/create', data);
         return response.data;
