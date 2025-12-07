@@ -1,17 +1,23 @@
-import {z} from "zod/v4";
+import { z } from "zod/v4";
 import { id } from "@/lib/schema/common";
 import { infiniteScroll, pageLimitSchema } from "@/lib/schema/page";
 import { InstructorPermission } from "@/generated/prisma/enums";
+import { InstructorStatus } from "@/generated/prisma/enums";
 
 
 
 export const filterInstructorCoursesSchema = z.object({
     courseId: id,
     search: z.string().optional(),
+    permissions: z.array(z.enum(InstructorPermission)),
+    status: z.enum([...Object.values(InstructorStatus),'ALL']),
+    shareRange: z.array(z.number()).length(2).refine((val) => val[0] >= 0 && val[1] <= 100 && val[0] <= val[1], {
+        message: "Share range must be between 0 and 100 and the first value must be less than or equal to the second value",
+    }),
 });
 
 export const filterInstructorCoursesWithPageLimitSchema = filterInstructorCoursesSchema.extend({
-   pageLimit: pageLimitSchema,
+    pageLimit: pageLimitSchema,
 });
 
 export type FilterInstructorCoursesWithPageLimitSchema = z.infer<typeof filterInstructorCoursesWithPageLimitSchema>;
@@ -23,8 +29,8 @@ export const addInstructorToCourseSchema = z.object({
     permissions: z.array(z.enum(InstructorPermission)),
 });
 
-export const editInstructorInCourseSchema = addInstructorToCourseSchema.omit({instructorId: true, courseId: true}).extend({
-    share:z.string().refine((val) => {
+export const editInstructorInCourseSchema = addInstructorToCourseSchema.omit({ instructorId: true, courseId: true }).extend({
+    share: z.string().refine((val) => {
         const num = parseFloat(val);
         return !isNaN(num) && num >= 0 && num <= 100;
     }, { message: "Share must be a number between 0 and 100" }),

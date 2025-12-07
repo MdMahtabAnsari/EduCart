@@ -18,12 +18,15 @@ export function InstructorList({ courseId }: InstructorListProps) {
     const [filters, setFilters] = useState<FilterInstructorCoursesSchema>({
         courseId: courseId,
         search: "",
+        permissions: [],
+        status: "ALL",
+        shareRange: [0, 100],
     });
     const limit = 12;
     const { ref, inView } = useInView();
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = api.teacher.instructor.filterCourseInstructorsWithInfiniteScroll.useInfiniteQuery(
-        {
+        {   ...filters,
             courseId: filters.courseId,
             search: filters.search?.trim() === "" ? undefined : filters.search,
             limit
@@ -50,7 +53,7 @@ export function InstructorList({ courseId }: InstructorListProps) {
                         setFilters(values);
                     }}
                     defaultValues={filters}
-                    show={{ courseId: false, search: true }}
+                    show={{ courseId: false, search: true, permissions: true, status: true, shareRange: true }}
                 />
                 {permissions.canCreate && <AddInstructorDialog courseId={courseId} onSuccess={refetch}  trigger={<Button className="w-fit cursor-pointer" size="lg"><UserPlus />Add Instructor</Button>} />}
             </div>

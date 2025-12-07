@@ -1,6 +1,6 @@
 import { router, teacherProcedure } from "@/server/api/trpc";
 import { inferRouterOutputs } from "@trpc/server";
-import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema,editInstructorInCourseSchema,removeInstructorFromCourseSchema } from "@/lib/schema/instructor";
+import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema, editInstructorInCourseSchema, removeInstructorFromCourseSchema } from "@/lib/schema/instructor";
 import { PaginationSchema } from "@/lib/schema/page";
 import { TRPCError } from "@trpc/server";
 import { id } from "@/lib/schema/common";
@@ -242,14 +242,25 @@ export const instructorRouter = router({
     }),
     filterCourseInstructorsWithInfiniteScroll: teacherProcedure.input(filterInstructorCoursesWithInfiniteScrollSchema).query(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
-        const { courseId, search, cursor, limit } = input;
+        const { courseId, search, cursor, limit,permissions, status, shareRange } = input;
+        const min = shareRange[0];
+        const max = shareRange[1];
         try {
             const limitPlusOne = limit ? limit + 1 : 11;
             const instructors = await prisma.courseInstructor.findMany({
                 where: {
                     courseId,
                     status: {
-                        in: ['APPROVED', 'PENDING']
+                        in: status === 'ALL' ? ['PENDING','APPROVED','REJECTED'] : [status]
+                    },
+                    ... (permissions && permissions.length > 0 && {
+                        permissions: {
+                            hasSome: permissions
+                        }
+                    }),
+                    share: {
+                        gte: min,
+                        lte: max
                     },
                     user: {
                         ... (search && {
@@ -273,7 +284,7 @@ export const instructorRouter = router({
                                     }
                                 }
                             ],
-                        })
+                        }),
                     }
                 },
                 orderBy: {
@@ -332,7 +343,7 @@ export const instructorRouter = router({
     }),
     editInstructorInCourse: teacherProcedure.input(editInstructorInCourseSchema).mutation(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
-        const { id,courseId,...data } = input;
+        const { id, courseId, ...data } = input;
         try {
             const isOwner = await prisma.courseInstructor.findFirst({
                 where: {
@@ -348,7 +359,7 @@ export const instructorRouter = router({
                     message: "Only course owners can edit instructor details",
                 });
             }
-            if(data.share !== undefined){
+            if (data.share !== undefined) {
                 const occupiedShare = await prisma.courseInstructor.aggregate({
                     where: {
                         courseId,
@@ -380,7 +391,7 @@ export const instructorRouter = router({
     removeInstructorFromCourse: teacherProcedure.input(removeInstructorFromCourseSchema).mutation(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
         const { id, courseId } = input;
-        try{
+        try {
             const isOwner = await prisma.courseInstructor.findFirst({
                 where: {
                     courseId,
@@ -402,6 +413,98 @@ export const instructorRouter = router({
                 }
             });
         } catch (error) {
+            throw error;
+        }
+    }),
+
+    getMyPendingRequestWithCourseDetails: teacherProcedure.input(id).query(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        const courseId = input;
+        try {
+            const request = await prisma.courseInstructor.findFirst({
+                where: {
+                    courseId,
+                    userId: ctx.session!.user.id,
+                    status: 'PENDING'
+                },
+                include: {
+                    course:{
+                        include: {
+                            media: true
+                        }
+                    }
+                }
+            });
+            if(!request){
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "No pending request found for this course",
+                });
+            }
+            return request;
+        } catch (error) {
+            throw error;
+        }
+    }),
+
+    acceptRequest: teacherProcedure.input(id).mutation(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        const requestId = input;
+        try {
+            const request = await prisma.courseInstructor.findFirst({
+                where: {
+                    id: requestId,
+                    userId: ctx.session!.user.id,
+                    status: 'PENDING'
+                }
+            });
+            if (!request) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "No pending request found",
+                });
+            }
+            const updatedRequest = await prisma.courseInstructor.update({
+                where: {
+                    id: requestId
+                },
+                data: {
+                    status: 'APPROVED'
+                }
+            });
+            return updatedRequest;
+        } catch (error) {
+            throw error;
+        }
+    }),
+    rejectRequest: teacherProcedure.input(id).mutation(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        const requestId = input;
+        try {
+            const request = await prisma.courseInstructor.findFirst({
+                where: {
+                    id: requestId,
+                    userId: ctx.session!.user.id,
+                    status: 'PENDING'
+                }
+            });
+            if (!request) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "No pending request found",
+                });
+            }
+            const updatedRequest = await prisma.courseInstructor.update({
+                where: {
+                    id: requestId
+                },
+                data: {
+                    status: 'REJECTED'
+                }
+            });
+            return updatedRequest;
+        }
+        catch (error) {
             throw error;
         }
     }),

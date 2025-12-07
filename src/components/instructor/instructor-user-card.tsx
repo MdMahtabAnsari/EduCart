@@ -24,7 +24,7 @@ import {
 import { EllipsisVertical, Trash, SquarePen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EditInstructorDialog } from "@/components/dialog/instructor/edit-instructor-dialog";
-import {api} from "@/trpc/react";
+import { api } from "@/trpc/react";
 import { toast } from "sonner";
 
 interface InstructorUserCardProps {
@@ -45,6 +45,7 @@ export function InstructorUserCard({
     const { name, image, email } = user;
     const { canDelete, canUpdate } = permissions;
     const removeMutation = api.teacher.instructor.removeInstructorFromCourse.useMutation();
+
 
     const handleRemove = () => {
         toast.promise(
@@ -81,16 +82,16 @@ export function InstructorUserCard({
                                 <CardTitle className="text-sm font-semibold text-foreground">
                                     {name}
                                 </CardTitle>
-                                {status && (
-                                    <Badge variant="secondary" className="text-xs">
-                                        {status}
-                                    </Badge>
-                                )}
-                                {role && (
-                                    <Badge variant="outline" className="text-xs">
-                                        {role.replace("_", " ")}
-                                    </Badge>
-                                )}
+
+                                <Badge variant="secondary" className="text-xs">
+                                    {status}
+                                </Badge>
+
+
+                                <Badge variant="outline" className="text-xs">
+                                    {role.replace("_", " ")}
+                                </Badge>
+
                             </div>
                             <p className="text-xs text-muted-foreground">{email}</p>
                         </div>
@@ -122,7 +123,7 @@ export function InstructorUserCard({
                                                 </DropdownMenuItem>
                                             }
                                             onSuccess={onSuccess}
-                                            isOwner={role==="OWNER"}
+                                            isOwner={role === "OWNER"}
                                         />
                                     )}
                                     {canDelete && role !== "OWNER" && (
