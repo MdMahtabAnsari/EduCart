@@ -13,14 +13,14 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
 
-interface RequestCardProps {
+interface CourseCardProps {
     request: InstructorRouterOutputs["getMyPendingRequestWithCourseDetails"];
-    onAccept?: () => void;
-    onReject?: () => void;
+    onAccept?: (id:string) => void;
+    onReject?: (id:string) => void;
 }
 
-export function RequestCard({ request, onAccept, onReject }: RequestCardProps) {
-    const { course, permissions, role, status } = request;
+export function CourseCard({ request, onAccept, onReject }: CourseCardProps) {
+    const { course, permissions, role, status, share,id } = request;
     const { title, media } = course;
 
     return (
@@ -29,14 +29,17 @@ export function RequestCard({ request, onAccept, onReject }: RequestCardProps) {
             <CardHeader className="p-5 border-b">
                 <CardTitle className="text-lg font-semibold leading-tight">{title}</CardTitle>
                 <CardDescription className="text-sm text-muted-foreground mt-1">
-                    Role: <span className="font-medium text-foreground">{role.replaceAll("_", " ")}</span>
+                    Role:{" "}
+                    <span className="font-medium text-foreground">
+                        {role.replaceAll("_", " ")}
+                    </span>
                 </CardDescription>
             </CardHeader>
 
             {/* Content */}
             <CardContent className="flex flex-col sm:flex-row w-full gap-5 p-5">
                 {/* Thumbnail */}
-                <div className="w-full sm:w-56 rounded-lg overflow-hidden border bg-muted/30">
+                <div className="w-full sm:w-56 rounded-lg overflow-hidden border bg-muted/30 h-fit">
                     <AspectRatio ratio={16 / 9}>
                         <Media
                             url={media.url}
@@ -52,7 +55,9 @@ export function RequestCard({ request, onAccept, onReject }: RequestCardProps) {
                     {/* Permissions */}
                     <div>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-foreground/90">Permissions:</span>
+                            <span className="text-sm font-medium text-foreground/90">
+                                Permissions:
+                            </span>
                         </div>
 
                         {permissions.length ? (
@@ -76,6 +81,20 @@ export function RequestCard({ request, onAccept, onReject }: RequestCardProps) {
 
                     <Separator className="my-4" />
 
+                    {/* Share */}
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-foreground/90">
+                            Share:
+                        </span>
+                        <span className="text-sm text-foreground font-semibold">
+                            <Badge variant="outline" className="px-2 py-1">
+                                {Number(share).toFixed(2)}%
+                            </Badge>
+                        </span>
+                    </div>
+
+                    <Separator className="my-4" />
+
                     {/* Status + Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         {/* Status */}
@@ -90,25 +109,27 @@ export function RequestCard({ request, onAccept, onReject }: RequestCardProps) {
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex gap-3 justify-end">
-                            <Button
-                                variant="destructive"
-                                size="lg"
-                                className="cursor-pointer"
-                                onClick={onReject}
-                            >
-                                <X  />
-                                Reject
-                            </Button>
-                            <Button
-                                size="lg"
-                                className="cursor-pointer"
-                                onClick={onAccept}
-                            >
-                                <Check  />
-                                Accept
-                            </Button>
-                        </div>
+                        {status === "PENDING" && (
+                            <div className="flex gap-3 justify-end">
+                                <Button
+                                    variant="destructive"
+                                    size="lg"
+                                    className="cursor-pointer"
+                                    onClick={() => onReject?.(id)}
+                                >
+                                    <X />
+                                    Reject
+                                </Button>
+                                <Button
+                                    size="lg"
+                                    className="cursor-pointer"
+                                    onClick={() => onAccept?.(id)}
+                                >
+                                    <Check />
+                                    Accept
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardContent>

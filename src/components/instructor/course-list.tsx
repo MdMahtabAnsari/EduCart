@@ -3,20 +3,18 @@ import { api } from '@/trpc/react';
 import { useEffect, useState } from "react";
 import { Spinner } from '@/components/ui/shadcn-io/spinner';
 import { useInView } from "react-intersection-observer";
-import { InstructorUserCard } from '@/components/instructor/instructor-user-card';
-import { AddInstructorDialog } from '@/components/dialog/instructor/add-instructor-dialog';
 import { Button } from '@/components/ui/button';
-import { SlidersHorizontal, UserPlus } from "lucide-react";
-import { InstructorFilter } from '@/components/filters/instructor-filter';
+import { SlidersHorizontal } from "lucide-react";
 import {FilterInstructorCoursesWithOptionalCourseIdSchema } from '@/lib/schema/instructor';
+import { InstructorCourseFilter } from '@/components/filters/instructor-course-filter';
+import { CourseCard } from '@/components/instructor/course-card';
+import { toast } from 'sonner';
 
-interface InstructorListProps {
-    courseId: string
-}
 
-export function InstructorList({ courseId }: InstructorListProps) {
+
+export function CourseList() {
     const [filters, setFilters] = useState<FilterInstructorCoursesWithOptionalCourseIdSchema>({
-        courseId: courseId,
+        courseId:undefined,
         search: "",
         permissions: [],
         status: "ALL",
@@ -25,9 +23,9 @@ export function InstructorList({ courseId }: InstructorListProps) {
     const limit = 12;
     const { ref, inView } = useInView();
 
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = api.teacher.instructor.filterCourseInstructorsWithInfiniteScroll.useInfiniteQuery(
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = api.teacher.instructor.getMyCoursesAsInstructorWithInfiniteScroll.useInfiniteQuery(
         {   ...filters,
-            courseId: courseId,
+            courseId: filters.courseId?.trim() === "" ? undefined : filters.courseId,
             search: filters.search?.trim() === "" ? undefined : filters.search,
             limit
         },
@@ -36,32 +34,64 @@ export function InstructorList({ courseId }: InstructorListProps) {
             initialCursor: undefined,
         }
     );
+    const acceptRequestMutation = api.teacher.instructor.acceptRequest.useMutation();
+    const rejectRequestMutation = api.teacher.instructor.rejectRequest.useMutation();
     useEffect(() => {
         if (inView) {
             fetchNextPage();
         }
     }, [inView, fetchNextPage]);
     const users = data?.pages.flatMap((p) => p.instructors) ?? [];
-    const permissions = data?.pages[0]?.permissions ?? { canUpdate: false, canDelete: false, canCreate: false };
+
+    const onAccept = async (requestId: string) => {
+        toast.promise(
+            acceptRequestMutation.mutateAsync(requestId, {
+                onSuccess: () => {
+                    refetch();
+                }
+            })
+            ,
+            {
+                loading: "Accepting request...",
+                success: "Request accepted",
+                error: (err) => `Error: ${err.message}`,
+            }
+        );
+    };
+
+    const onReject = async (requestId: string) => {
+        toast.promise(
+            rejectRequestMutation.mutateAsync(requestId, {
+                onSuccess: () => {
+                    refetch();
+                }
+            })
+            ,
+            {
+                loading: "Rejecting request...",
+                success: "Request rejected",
+                error: (err) => `Error: ${err.message}`,
+            }
+        );
+    };
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
             <div className="flex items-center justify-start gap-2">
-                <InstructorFilter
+                <InstructorCourseFilter
                     trigger={<Button className="cursor-pointer w-fit" size="lg"><SlidersHorizontal /> Filter</Button>}
                     onSubmit={(values) => {
                         setFilters(values);
                     }}
                     defaultValues={filters}
-                    show={{ courseId: false, search: true, permissions: true, status: true, shareRange: true }}
+                    show={{ courseId: true, search: true, permissions: true, status: true, shareRange: true }}
                 />
-                {permissions.canCreate && <AddInstructorDialog courseId={courseId} onSuccess={refetch}  trigger={<Button className="w-fit cursor-pointer" size="lg"><UserPlus />Add Instructor</Button>} />}
             </div>
 
             <div className="w-full h-[calc(100vh-200px)] overflow-scroll scrollbar-hide">
                 <div className="flex flex-col gap-4">
                     {users.map((user) => (
-                        <InstructorUserCard key={user.id} instructor={user} permissions={permissions} onSuccess={refetch} />
+                        <CourseCard key={user.id} request={user} onAccept={onAccept} onReject={onReject} />
                     ))}
                 </div>
                 <div ref={ref} className="flex justify-center my-4"
@@ -69,7 +99,7 @@ export function InstructorList({ courseId }: InstructorListProps) {
                     {isFetchingNextPage ? (
                         <Spinner />
                     ) : !hasNextPage ? (
-                        <div className="text-muted-foreground">No more instructors to load</div>
+                        <div className="text-muted-foreground">No more courses to load</div>
                     ) : undefined}
                 </div>
             </div>

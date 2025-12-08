@@ -16,6 +16,14 @@ export const filterInstructorCoursesSchema = z.object({
     }),
 });
 
+export const filterInstructorCoursesWithOptionalCourseIdSchema = filterInstructorCoursesSchema.extend({
+    courseId: id.optional(),
+});
+
+export type FilterInstructorCoursesWithOptionalCourseIdSchema = z.infer<typeof filterInstructorCoursesWithOptionalCourseIdSchema>;
+
+export const filterInstructorCoursesWithOptionalCourseIdWithInfiniteScrollSchema = filterInstructorCoursesWithOptionalCourseIdSchema.extend(infiniteScroll.shape);
+
 export const filterInstructorCoursesWithPageLimitSchema = filterInstructorCoursesSchema.extend({
     pageLimit: pageLimitSchema,
 });

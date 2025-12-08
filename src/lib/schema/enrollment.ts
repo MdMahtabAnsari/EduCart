@@ -10,7 +10,7 @@ export const filteredEnrollmentsSchema = z.object({
     status: z.enum([...Object.values(EnrollmentStatus),'ALL'])
 });
 
-export const fiteredEnrollmentSchmeaWithOptionalCourseId = filteredEnrollmentsSchema.extend({
+export const filteredEnrollmentSchemaWithOptionalCourseId = filteredEnrollmentsSchema.extend({
     courseId: id.optional(),
 });
 
@@ -23,7 +23,7 @@ export const filteredEnrollmentsSchemaWithPageLimit = filteredEnrollmentsSchema.
     pageLimit: pageLimitSchema,
 });
 
-export const studentsWithInfiniteScrollSchema = fiteredEnrollmentSchmeaWithOptionalCourseId.extend(infiniteScroll.shape);
+export const studentsWithInfiniteScrollSchema = filteredEnrollmentSchemaWithOptionalCourseId.extend(infiniteScroll.shape);
 
 
-export type FiteredEnrollmentSchmeaWithOptionalCourseId = z.infer<typeof fiteredEnrollmentSchmeaWithOptionalCourseId>;
+export type FilteredEnrollmentSchemaWithOptionalCourseId = z.infer<typeof filteredEnrollmentSchemaWithOptionalCourseId>;

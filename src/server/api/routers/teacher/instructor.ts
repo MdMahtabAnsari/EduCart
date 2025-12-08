@@ -1,6 +1,6 @@
 import { router, teacherProcedure } from "@/server/api/trpc";
 import { inferRouterOutputs } from "@trpc/server";
-import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema, editInstructorInCourseSchema, removeInstructorFromCourseSchema,filterNonAddedCourseInstructorsWithInfiniteScrollSchema } from "@/lib/schema/instructor";
+import { filterInstructorCoursesWithPageLimitSchema, addInstructorToCourseSchema, filterInstructorCoursesWithInfiniteScrollSchema, editInstructorInCourseSchema, removeInstructorFromCourseSchema, filterNonAddedCourseInstructorsWithInfiniteScrollSchema, filterInstructorCoursesWithOptionalCourseIdWithInfiniteScrollSchema } from "@/lib/schema/instructor";
 import { PaginationSchema } from "@/lib/schema/page";
 import { TRPCError } from "@trpc/server";
 import { id } from "@/lib/schema/common";
@@ -242,7 +242,7 @@ export const instructorRouter = router({
     }),
     filterCourseInstructorsWithInfiniteScroll: teacherProcedure.input(filterInstructorCoursesWithInfiniteScrollSchema).query(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
-        const { courseId, search, cursor, limit,permissions, status, shareRange } = input;
+        const { courseId, search, cursor, limit, permissions, status, shareRange } = input;
         const min = shareRange[0];
         const max = shareRange[1];
         try {
@@ -253,7 +253,7 @@ export const instructorRouter = router({
                     status: 'APPROVED',
                 }
             });
-            if(!isOwnerOrMember){
+            if (!isOwnerOrMember) {
                 throw new TRPCError({
                     code: "FORBIDDEN",
                     message: "You are not an instructor of this course",
@@ -264,7 +264,7 @@ export const instructorRouter = router({
                 where: {
                     courseId,
                     status: {
-                        in: status === 'ALL' ? ['PENDING','APPROVED','REJECTED'] : [status]
+                        in: status === 'ALL' ? ['PENDING', 'APPROVED', 'REJECTED'] : [status]
                     },
                     ... (permissions && permissions.length > 0 && {
                         permissions: {
@@ -275,8 +275,9 @@ export const instructorRouter = router({
                         gte: min,
                         lte: max
                     },
-                    user: {
-                        ... (search && {
+                    ... (search && {
+                        user: {
+
                             OR: [
                                 {
                                     name: {
@@ -297,12 +298,13 @@ export const instructorRouter = router({
                                     }
                                 }
                             ],
-                        }),
-                    }
+                        }
+                    })
                 },
-                orderBy: {
-                    share: 'desc'
-                },
+                orderBy: [
+                    { share: "desc" },
+                    { id: "desc" }   // stable ordering
+                ],
                 take: limitPlusOne,
                 ...(cursor && { cursor: { id: cursor } }),
                 include: {
@@ -433,14 +435,14 @@ export const instructorRouter = router({
                     status: 'PENDING'
                 },
                 include: {
-                    course:{
+                    course: {
                         include: {
                             media: true
                         }
                     }
                 }
             });
-            if(!request){
+            if (!request) {
                 throw new TRPCError({
                     code: "NOT_FOUND",
                     message: "No pending request found for this course",
@@ -513,7 +515,75 @@ export const instructorRouter = router({
             throw error;
         }
     }),
+    getMyCoursesAsInstructorWithInfiniteScroll: teacherProcedure.input(filterInstructorCoursesWithOptionalCourseIdWithInfiniteScrollSchema).query(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        const { courseId, cursor, limit, status, shareRange, search, permissions } = input;
+        const min = shareRange[0];
+        const max = shareRange[1];
+        try {
+            const limitPlusOne = limit ? limit + 1 : 11;
+            const instructors = await prisma.courseInstructor.findMany({
+                where: {
+                    userId: ctx.session!.user.id,
+                    ... (courseId && { courseId }),
+                    status: {
+                        in: status === 'ALL' ? ['PENDING', 'APPROVED', 'REJECTED'] : [status]
+                    },
+                    ... (permissions && permissions.length > 0 && {
+                        permissions: {
+                            hasSome: permissions
+                        }
+                    }),
+                    share: {
+                        gte: min,
+                        lte: max
+                    },
+                    ... (search && {
+                        course: {
 
+                            OR: [
+                                {
+                                    title: {
+                                        contains: search,
+                                        mode: "insensitive"
+                                    },
+                                },
+                                {
+                                    description: {
+                                        contains: search,
+                                        mode: "insensitive"
+                                    },
+                                }
+                            ],
+                        }
+                    })
+                },
+                orderBy: [
+                    { share: "desc" },
+                    { id: "desc" }   // stable ordering
+                ],
+                take: limitPlusOne,
+                ...(cursor && { cursor: { id: cursor } }),
+                include: {
+                    course: {
+                        include: {
+                            media: true
+                        }
+                    }
+                }
+
+            });
+            let nextCursor: typeof cursor | undefined = undefined;
+            if (instructors.length > (limitPlusOne - 1)) {
+                const nextItem = instructors.pop();
+                nextCursor = nextItem!.id;
+            }
+            return { instructors, nextCursor };
+        }
+        catch (error) {
+            throw error;
+        }
+    }),
 });
 
 export type InstructorRouterOutputs = inferRouterOutputs<typeof instructorRouter>;

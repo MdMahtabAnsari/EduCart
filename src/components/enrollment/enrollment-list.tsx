@@ -1,7 +1,7 @@
 'use client';
 import { EnrollmentUserCard } from "@/components/enrollment/enrollment-user-card";
 import { EnrollmentFilter } from "@/components/filters/enrollment-filter";
-import { type FilteredEnrollmentsSchema, type FiteredEnrollmentSchmeaWithOptionalCourseId } from "@/lib/schema/enrollment";
+import { type FilteredEnrollmentsSchema, type FilteredEnrollmentSchemaWithOptionalCourseId } from "@/lib/schema/enrollment";
 import { api } from '@/trpc/react';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,7 @@ export function EnrollmentList({ courseId }: EnrollmentListProps) {
             initialCursor: undefined,
         }
     );
-    const onFilterSubmit = (values: FiteredEnrollmentSchmeaWithOptionalCourseId) => {
+    const onFilterSubmit = (values: FilteredEnrollmentSchemaWithOptionalCourseId) => {
         setFilters({
             courseId: courseId,
             search: values.search || "",

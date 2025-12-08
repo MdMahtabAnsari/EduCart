@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { type FilterInstructorCoursesSchema, filterInstructorCoursesSchema } from "@/lib/schema/instructor";
+import { type FilterInstructorCoursesWithOptionalCourseIdSchema, filterInstructorCoursesWithOptionalCourseIdSchema } from "@/lib/schema/instructor";
 import { Button } from "@/components/ui/button";
 import {
     Form,
@@ -31,8 +31,8 @@ import {
 } from "@/components/ui/select"
 
 export interface InstructorFilterFormProps {
-    onSubmit: (values: FilterInstructorCoursesSchema) => void;
-    defaultValues: FilterInstructorCoursesSchema;
+    onSubmit: (values: FilterInstructorCoursesWithOptionalCourseIdSchema) => void;
+    defaultValues: FilterInstructorCoursesWithOptionalCourseIdSchema;
     show: {
         courseId: boolean;
         search: boolean;
@@ -44,8 +44,8 @@ export interface InstructorFilterFormProps {
 
 export function InstructorFilterForm({ onSubmit, defaultValues, show }: InstructorFilterFormProps) {
     const { courseId, search, permissions, status, shareRange } = show;
-    const form = useForm<FilterInstructorCoursesSchema>({
-        resolver: zodResolver(filterInstructorCoursesSchema),
+    const form = useForm<FilterInstructorCoursesWithOptionalCourseIdSchema>({
+        resolver: zodResolver(filterInstructorCoursesWithOptionalCourseIdSchema),
         defaultValues,
         mode: "onChange",
     });

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { fiteredEnrollmentSchmeaWithOptionalCourseId, type FiteredEnrollmentSchmeaWithOptionalCourseId } from "@/lib/schema/enrollment";
+import { filteredEnrollmentSchemaWithOptionalCourseId, type FilteredEnrollmentSchemaWithOptionalCourseId } from "@/lib/schema/enrollment";
 import { EnrollmentStatus } from "@/generated/prisma/enums";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,8 +27,8 @@ import { Input } from "@/components/ui/input";
 import { CourseCombobox } from "@/components/combobox/course-combobox";
 
 export interface EnrollmentFilterFormProps {
-    onSubmit: (values: FiteredEnrollmentSchmeaWithOptionalCourseId) => void;
-    defaultValues: FiteredEnrollmentSchmeaWithOptionalCourseId;
+    onSubmit: (values: FilteredEnrollmentSchemaWithOptionalCourseId) => void;
+    defaultValues: FilteredEnrollmentSchemaWithOptionalCourseId;
     show: {
         courseId: boolean;
         search: boolean;
@@ -38,8 +38,8 @@ export interface EnrollmentFilterFormProps {
 
 export function EnrollmentFilterForm({ onSubmit, defaultValues, show }: EnrollmentFilterFormProps) {
     const { courseId, search, status } = show;
-    const form = useForm<FiteredEnrollmentSchmeaWithOptionalCourseId>({
-        resolver: zodResolver(fiteredEnrollmentSchmeaWithOptionalCourseId),
+    const form = useForm<FilteredEnrollmentSchemaWithOptionalCourseId>({
+        resolver: zodResolver(filteredEnrollmentSchemaWithOptionalCourseId),
         defaultValues,
         mode: "onChange",
     });

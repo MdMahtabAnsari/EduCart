@@ -1,6 +1,6 @@
 'use client';
 import { EnrollmentFilter } from "@/components/filters/enrollment-filter";
-import { type FiteredEnrollmentSchmeaWithOptionalCourseId } from "@/lib/schema/enrollment";
+import { type FilteredEnrollmentSchemaWithOptionalCourseId } from "@/lib/schema/enrollment";
 import { api } from '@/trpc/react';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useInView } from "react-intersection-observer";
 
 
 export function StudentList() {
-    const [filters, setFilters] = useState<FiteredEnrollmentSchmeaWithOptionalCourseId>({
+    const [filters, setFilters] = useState<FilteredEnrollmentSchemaWithOptionalCourseId>({
         courseId: undefined,
         search: "",
         status: "ALL",
