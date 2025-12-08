@@ -246,6 +246,19 @@ export const instructorRouter = router({
         const min = shareRange[0];
         const max = shareRange[1];
         try {
+            const isOwnerOrMember = await prisma.courseInstructor.findFirst({
+                where: {
+                    courseId,
+                    userId: ctx.session!.user.id,
+                    status: 'APPROVED',
+                }
+            });
+            if(!isOwnerOrMember){
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "You are not an instructor of this course",
+                });
+            }
             const limitPlusOne = limit ? limit + 1 : 11;
             const instructors = await prisma.courseInstructor.findMany({
                 where: {
@@ -299,15 +312,7 @@ export const instructorRouter = router({
             let canCreate = false;
             let canUpdate = false;
             let canDelete = false;
-            const isOwner = await prisma.courseInstructor.findFirst({
-                where: {
-                    courseId,
-                    userId: ctx.session!.user.id,
-                    role: 'OWNER',
-                    status: 'APPROVED'
-                }
-            });
-            if (isOwner) {
+            if (isOwnerOrMember.role === 'OWNER') {
                 canCreate = true;
                 canUpdate = true;
                 canDelete = true;
