@@ -12,20 +12,31 @@ import {FilterInstructorCoursesWithOptionalCourseIdSchema } from '@/lib/schema/i
 
 interface InstructorListProps {
     courseId: string
+    role:string
 }
 
-export function InstructorList({ courseId }: InstructorListProps) {
+export function InstructorList({ courseId, role }: InstructorListProps) {
     const [filters, setFilters] = useState<FilterInstructorCoursesWithOptionalCourseIdSchema>({
         courseId: courseId,
         search: "",
         permissions: [],
-        status: "ALL",
+        status: "APPROVED",
         shareRange: [0, 100],
     });
     const limit = 12;
     const { ref, inView } = useInView();
 
-    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = api.teacher.instructor.filterCourseInstructorsWithInfiniteScroll.useInfiniteQuery(
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = role==='teacher'? api.teacher.instructor.filterCourseInstructorsWithInfiniteScroll.useInfiniteQuery(
+        {   ...filters,
+            courseId: courseId,
+            search: filters.search?.trim() === "" ? undefined : filters.search,
+            limit
+        },
+        {
+            getNextPageParam: (lastPage) => lastPage.nextCursor,
+            initialCursor: undefined,
+        }
+    ): api.user.instructor.filterCourseInstructorsWithInfiniteScroll.useInfiniteQuery(
         {   ...filters,
             courseId: courseId,
             search: filters.search?.trim() === "" ? undefined : filters.search,
@@ -46,6 +57,7 @@ export function InstructorList({ courseId }: InstructorListProps) {
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
+            {role !== "user" &&(
             <div className="flex items-center justify-start gap-2">
                 <InstructorFilter
                     trigger={<Button className="cursor-pointer w-fit" size="lg"><SlidersHorizontal /> Filter</Button>}
@@ -57,11 +69,12 @@ export function InstructorList({ courseId }: InstructorListProps) {
                 />
                 {permissions.canCreate && <AddInstructorDialog courseId={courseId} onSuccess={refetch}  trigger={<Button className="w-fit cursor-pointer" size="lg"><UserPlus />Add Instructor</Button>} />}
             </div>
+            )}
 
             <div className="w-full h-[calc(100vh-200px)] overflow-scroll scrollbar-hide">
                 <div className="flex flex-col gap-4">
                     {users.map((user) => (
-                        <InstructorUserCard key={user.id} instructor={user} permissions={permissions} onSuccess={refetch} />
+                        <InstructorUserCard key={user.id} instructor={user} permissions={permissions} onSuccess={refetch} role={role} />
                     ))}
                 </div>
                 <div ref={ref} className="flex justify-center my-4"

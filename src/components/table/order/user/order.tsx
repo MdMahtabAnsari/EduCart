@@ -1,5 +1,5 @@
 "use client";
-import { columns } from "@/components/table/order/teacher/column";
+import { columns } from "@/components/table/order/user/column";
 import { api } from "@/trpc/react";
 import { DataTable } from "@/components/ui/data-table";
 import { useState } from "react";
@@ -7,13 +7,12 @@ import { Error } from "@/components/error/error";
 import type {  SortingState } from "@tanstack/react-table";
 import { useCallback, useEffect } from "react";
 import { useDebounceCallback } from 'usehooks-ts'
-import { filterTeacherOrdersSchema } from "@/lib/schema/order";
+import { filterUserOrdersSchema } from "@/lib/schema/order";
 
 export function OrderTable() {
     const [page, setPage] = useState(1);
     const [limit] = useState(10);
-    const [shareAmount, setShareAmount] = useState<'ASC' | 'DESC' | undefined>(undefined);
-    const [itemAmount, setItemAmount] = useState<'ASC' | 'DESC' | undefined>(undefined);
+    const [amount, setAmount] = useState<'ASC' | 'DESC' | undefined>(undefined);
     const [orderDate, setOrderDate] = useState<'ASC' | 'DESC' | undefined>(undefined);
     const [sorting, setSorting] = useState<SortingState>([])
     const [searchTerm, setSearchTerm] = useState('')
@@ -28,19 +27,17 @@ export function OrderTable() {
         console.log('Debounced Search changed:', debouncedSearchTerm);
     }, [debouncedSearchTerm]);
 
-    const { data, isPending, error, isError, refetch } = api.teacher.order.filteredOrders.useQuery(
+    const { data, isPending, error, isError, refetch } = api.user.order.filteredOrders.useQuery(
         {
             pageLimit: { page, limit },
-            shareAmount,
-            itemAmount,
+            amount,
             orderDate,
             search: debouncedSearchTerm.trim() === '' ? undefined : debouncedSearchTerm,
         },
         {
-            enabled: filterTeacherOrdersSchema.safeParse({
+            enabled: filterUserOrdersSchema.safeParse({
                 pageLimit: { page, limit },
-                shareAmount,
-                itemAmount,
+                amount,
                 orderDate,
                 search: debouncedSearchTerm.trim() === '' ? undefined : debouncedSearchTerm,
             }).success
@@ -50,32 +47,24 @@ export function OrderTable() {
     const handleSortingChange = useCallback((newSorting: SortingState) => {
         setSorting(newSorting);
         if (newSorting.length === 0) {
-            setShareAmount(undefined);
-            setItemAmount(undefined);
+            setAmount(undefined);
             setOrderDate(undefined);
             return;
         }
         const sort = newSorting[0];
         switch (sort.id) {
-            case 'shareAmount':
-                setShareAmount(sort.desc ? 'DESC' : 'ASC');
-                setItemAmount(undefined);
-                setOrderDate(undefined);
-                break;
-            case 'itemAmount':
-                setItemAmount(sort.desc ? 'DESC' : 'ASC');
-                setShareAmount(undefined);
+            case 'amount':
+                setAmount(sort.desc ? 'DESC' : 'ASC');
                 setOrderDate(undefined);
                 break;
             case 'orderDate':
                 setOrderDate(sort.desc ? 'DESC' : 'ASC');
-                setShareAmount(undefined);
-                setItemAmount(undefined);
+                setAmount(undefined);
                 break;
             default:
                 break;
         }
-    }, [setShareAmount, setItemAmount, setOrderDate]);
+    }, [setAmount, setOrderDate]);
 
 
     useEffect(() => {

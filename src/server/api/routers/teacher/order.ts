@@ -95,6 +95,18 @@ export const orderRouter = router({
                     )
                 }
             });
+            const pagination: PaginationSchema = {
+                totalItems: ordersCount,
+                totalPages: Math.ceil(ordersCount / limit),
+                currentPage: page,
+                limit: limit,
+            };
+            if (ordersCount === 0) {
+                return {
+                    orders: [],
+                    pagination,
+                };
+            }
             const skip = (page - 1) * limit;
             const orderByClause = (shareAmount || itemAmount || orderDate) && {
                 ...(shareAmount && { shareAmount: shareAmount.toLowerCase() as 'asc' | 'desc' }),
@@ -143,12 +155,6 @@ export const orderRouter = router({
                     }
                 }
             });
-            const pagination: PaginationSchema = {
-                totalItems: ordersCount,
-                totalPages: Math.ceil(ordersCount / limit),
-                currentPage: page,
-                limit: limit,
-            };
             return {
                 orders,
                 pagination,

@@ -1,7 +1,7 @@
 import { CourseEnrollmentsChart } from "@/components/chart/course-enrollments-chart"
-import { TeacherStats } from "@/components/dashboard/teacher-stats"
+import { TeacherStats } from "@/components/stats/teacher-stats"
 import { OrderTable } from "@/components/table/order/teacher/order"
-export default async function Page() {
+export default function Page() {
     return (
         <div className="w-full h-full space-y-4">
             <TeacherStats />

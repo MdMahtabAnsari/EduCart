@@ -14,3 +14,10 @@ export const filterTeacherOrdersSchema = z.object({
     search: z.string().optional(),
 });
 
+
+export const filterUserOrdersSchema = z.object({
+    pageLimit: pageLimitSchema,
+    orderDate: z.enum(['ASC', 'DESC']).optional(),
+    amount: z.enum(['ASC', 'DESC']).optional(),
+    search: z.string().optional(),
+});

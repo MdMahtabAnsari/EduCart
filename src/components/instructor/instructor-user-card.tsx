@@ -34,14 +34,16 @@ interface InstructorUserCardProps {
         canDelete: boolean;
     };
     onSuccess?: () => void;
+    role:string;
 }
 
 export function InstructorUserCard({
     instructor,
     permissions,
     onSuccess,
+    role,
 }: InstructorUserCardProps) {
-    const { user, permissions: instructorPermissions, role, status, share, id } = instructor;
+    const { user, permissions: instructorPermissions, role: instructorRole, status, share, id } = instructor;
     const { name, image, email } = user;
     const { canDelete, canUpdate } = permissions;
     const removeMutation = api.teacher.instructor.removeInstructorFromCourse.useMutation();
@@ -89,7 +91,7 @@ export function InstructorUserCard({
 
 
                                 <Badge variant="outline" className="text-xs">
-                                    {role.replace("_", " ")}
+                                    {instructorRole.replace("_", " ")}
                                 </Badge>
 
                             </div>
@@ -123,10 +125,10 @@ export function InstructorUserCard({
                                                 </DropdownMenuItem>
                                             }
                                             onSuccess={onSuccess}
-                                            isOwner={role === "OWNER"}
+                                            isOwner={instructorRole === "OWNER"}
                                         />
                                     )}
-                                    {canDelete && role !== "OWNER" && (
+                                    {canDelete && instructorRole !== "OWNER" && (
                                         <DropdownMenuItem className="cursor-pointer text-destructive" onClick={handleRemove}>
                                             <Trash />
                                             Remove
@@ -138,7 +140,8 @@ export function InstructorUserCard({
                     </div>
                 </div>
             </CardHeader>
-
+        {role!=="user"&&(
+            <>
             <Separator />
 
             <CardContent className="space-y-3 pt-3">
@@ -165,6 +168,8 @@ export function InstructorUserCard({
                     </div>
                 </div>
             </CardContent>
+            </>
+        )}
         </Card>
     );
 }

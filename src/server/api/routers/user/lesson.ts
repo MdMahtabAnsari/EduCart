@@ -124,7 +124,6 @@ export const lessonRouter = router({
                 throw error;
             }
         }),
-
 });
 
 export type LessonRouterOutputs = inferRouterOutputs<typeof lessonRouter>;

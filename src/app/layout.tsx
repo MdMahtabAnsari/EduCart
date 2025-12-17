@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PaymentProvider } from "@/providers/payment-provider";
+import { PostHogProvider } from "@/providers/post-hog-provider";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased scrollbar-hide`}
       >
+        <PostHogProvider>
         <TRPCReactProvider>
           <PaymentProvider>
             <TooltipProvider>
@@ -48,6 +51,7 @@ export default function RootLayout({
             </TooltipProvider>
           </PaymentProvider>
         </TRPCReactProvider>
+        </PostHogProvider>
 
       </body>
     </html>

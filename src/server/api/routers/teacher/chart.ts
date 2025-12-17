@@ -108,7 +108,84 @@ export const chartRouter = router({
         catch (error) {
             throw error;
         }
-    })
+    }),
+    getEarningOverTime: teacherProcedure.input(dayEnum).query(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        try {
+            const now = new Date();
+            const startDay = input === "1"
+                ? startOfDay(now)
+                : input !== "ALL"
+                    ? startOfDay(subDays(now, Number(input) - 1))
+                    : undefined;
+            const endDay = endOfDay(now);
+            const dayFilter = input !== "ALL"
+                ? {
+                    createdAt: {
+                        gte: startDay,
+                        lte: endDay
+                    }
+                }
+                : undefined;
+            const earnings = await prisma.orderItemInstructorShare.groupBy({
+                by: ['createdAt'],
+                where: {
+                    instructor: {
+                        userId: ctx.session!.user.id,
+                    },
+                    orderItem: {
+                        order: {
+                            payment: {
+                                some: {
+                                    status: 'COMPLETED'
+                                }
+                            }
+                        }
+                    },
+                    ...dayFilter
+                },
+                _sum: { shareAmount: true },
+                orderBy: {
+                    createdAt: 'asc'
+                }
+            });
+            const earningsMap = new Map<string, number>();
+            earnings.forEach(earning => {
+                const dateKey = format(earning.createdAt, 'yyyy-MM-dd');
+                earningsMap.set(dateKey, earningsMap.get(dateKey) ? earningsMap.get(dateKey)! + (Number(earning._sum.shareAmount) ?? 0) : (Number(earning._sum.shareAmount) ?? 0));
+            });
+            const dates: string[] = [];
+            if (startDay) {
+                let cursor = startOfDay(startDay);
+                const last = startOfDay(endDay);
+                while (isBefore(cursor, addDays(last, 1))) {
+                    dates.push(format(cursor, 'yyyy-MM-dd'));
+                    cursor = addDays(cursor, 1);
+                }
+            } else {
+                // ALL: union of observed dates (no fixed window)
+                const set = new Set<string>(Array.from(earningsMap.keys()));
+                const startDay = Array.from(set).sort()[0];
+                let cursor = startOfDay(startDay);
+                const last = startOfDay(endDay);
+                while (isBefore(cursor, addDays(last, 1))) {
+                    dates.push(format(cursor, 'yyyy-MM-dd'));
+                    cursor = addDays(cursor, 1);
+                }
+            }
+            const result = dates.map(date => ({
+                date,
+                earnings: earningsMap.get(date) ?? 0
+            }));
+
+            return result;
+
+
+        }
+        catch (error) {
+            throw error;
+        }
+    }),
 });
 
 

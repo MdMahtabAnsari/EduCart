@@ -180,8 +180,8 @@ export const teacherNavMain = [
                 url: "/teacher/courses/create",
             },
             {
-                title: "Pending Approval",
-                url: "/teacher/courses/pending",
+                title: "Instructors",
+                url: "/teacher/courses/instructors",
             },
         ],
     },
@@ -202,7 +202,7 @@ export const teacherNavMain = [
     },
     {
         title: "Earnings",
-        url: "/teacher/earnings",
+        url: "/teacher/earnings/payouts",
         icon: DollarSign,
         items: [
             {

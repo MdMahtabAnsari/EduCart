@@ -5,15 +5,12 @@ import { api } from "@/trpc/react";
 import { DayEnum } from "@/lib/schema/day";
 import { Error } from "@/components/error/error";
 
-interface CourseEnrollmentsChartProps {
+interface EarningChartProps {
     role: string;
 }
-
-export function CourseEnrollmentsChart({ }: CourseEnrollmentsChartProps) {
+export function CompletedLessonChart({ }: EarningChartProps) {
     const [timeRange, setTimeRange] = useState<DayEnum>("30");
-
-    const { data, isPending, isError, error, refetch } = api.teacher.chart.getCourseEnrollmentsOverTime.useQuery(timeRange);
-
+    const { data, isPending, isError, error, refetch } = api.user.chart.getCompletedLessonsOverTime.useQuery(timeRange);
     if (isPending || !data) {
         return <GenericAreaChartSkeleton />;
     }
@@ -29,11 +26,10 @@ export function CourseEnrollmentsChart({ }: CourseEnrollmentsChartProps) {
         <GenericAreaChart
             data={data}
             series={[
-                { key: "enrollments", label: "Enrollments", colorVar: "--chart-1" },
-                { key: "courses", label: "Courses", colorVar: "--chart-2" },
+                { key: "completedLessons", label: "Completed Lessons", colorVar: "--chart-1" },
             ]}
-            title="Course Enrollments Over Time"
-            description="Number of course enrollments over time."
+            title="Completed Lessons Over Time"
+            description="Total completed lessons over time."
             initialTimeRange={timeRange}
             onTimeRangeChange={onTimeRangeChange}
         />

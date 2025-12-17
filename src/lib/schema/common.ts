@@ -1,5 +1,6 @@
 import {z} from 'zod/v4'
 import { infiniteScroll} from '@/lib/schema/page';
+import { pageLimitSchema } from '@/lib/schema/page';
 
 export const username = z.string().min(3).max(30).regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.');
 
@@ -11,3 +12,9 @@ export const id = z.uuid();
 export const searchWithInfiniteScrollSchema = z.object({
     search: z.string().optional(),
 }).extend(infiniteScroll.shape);
+
+
+export const serachWithPageLimitSchema = z.object({
+    search: z.string().optional(),
+    pageLimit: pageLimitSchema,
+});
