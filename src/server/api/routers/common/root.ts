@@ -6,6 +6,7 @@ import {commentRouter} from "@/server/api/routers/common/comment";
 import {commentReactionRouter} from "@/server/api/routers/common/comment-reaction";
 import { reviewRouter } from "@/server/api/routers/common/review";
 import { router } from "@/server/api/trpc";
+import { mediaRouter } from "@/server/api/routers/common/media";
 
 
 export const commonRouter = router({
@@ -16,4 +17,5 @@ export const commonRouter = router({
     comment: commentRouter,
     commentReaction: commentReactionRouter,
     review: reviewRouter,
+    media: mediaRouter,
 });

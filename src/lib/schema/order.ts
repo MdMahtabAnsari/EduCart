@@ -21,3 +21,6 @@ export const filterUserOrdersSchema = z.object({
     amount: z.enum(['ASC', 'DESC']).optional(),
     search: z.string().optional(),
 });
+
+
+export const filterAdminOrdersSchema = filterUserOrdersSchema

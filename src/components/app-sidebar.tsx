@@ -130,20 +130,16 @@ export const adminNavMain = [
     },
     {
         title: "Settings",
-        url: "/admin/settings",
+        url: "/admin/settings/accounts",
         icon: Settings2,
         items: [
             {
-                title: "General",
-                url: "/admin/settings/general",
+                title: "Accounts",
+                url: "/admin/settings/accounts",
             },
             {
-                title: "Roles & Permissions",
-                url: "/admin/settings/roles",
-            },
-            {
-                title: "Billing",
-                url: "/admin/settings/billing",
+                title: "Security",
+                url: "/admin/settings/security",
             },
         ],
     },
@@ -228,17 +224,17 @@ export const teacherNavMain = [
     },
     {
         title: "Settings",
-        url: "/teacher/settings",
+        url: "/teacher/settings/accounts",
         icon: Settings2,
         items: [
             {
-                title: "Profile",
-                url: "/teacher/settings/profile",
+                title: "Accounts",
+                url: "/teacher/settings/accounts",
             },
             {
-                title: "Account",
-                url: "/teacher/settings/account",
-            },
+                title: "Security",
+                url: "/teacher/settings/security",
+            }
         ],
     },
 ];
@@ -333,17 +329,17 @@ export const userNavMain = [
     },
     {
         title: "Settings",
-        url: "/user/settings",
+        url: "/user/settings/accounts",
         icon: Settings2,
         items: [
             {
-                title: "Profile",
-                url: "/user/settings/profile",
+                title: "Accounts",
+                url: "/user/settings/accounts",
             },
             {
-                title: "Account",
-                url: "/user/settings/account",
-            },
+                title: "Security",
+                url: "/user/settings/security",
+            }
         ],
     },
     {

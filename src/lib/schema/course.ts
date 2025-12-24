@@ -52,7 +52,7 @@ export const filteredCoursesSchema = z.object({
     priceRange: z.array(z.number()).length(2),
     ratings: z.number().min(0).max(5),
     enrolled: z.boolean(),
-    instructors: z.array(z.uuid()),
+    instructors: z.array(z.string()),
 });
 
 export type FilteredCoursesSchema = z.infer<typeof filteredCoursesSchema>;

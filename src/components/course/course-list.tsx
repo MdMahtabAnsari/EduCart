@@ -32,7 +32,7 @@ export function CourseList({ role, enrolled }: CourseListProps) {
     const { ref, inView } = useInView();
     const limit = 18;
 
-    const isTeacher = role === 'teacher';
+    const isUserOrAdmin = role === 'user' || role === 'admin';
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = role === 'teacher' ? api.teacher.course.filterCoursesWithInfiniteScroll.useInfiniteQuery(
             {
@@ -44,7 +44,17 @@ export function CourseList({ role, enrolled }: CourseListProps) {
                 getNextPageParam: (lastPage) => lastPage.nextCursor,
                 initialCursor: undefined,
             }
-        ): api.user.course.filterCoursesWithInfiniteScroll.useInfiniteQuery(
+        ):role==='user' ? api.user.course.filterCoursesWithInfiniteScroll.useInfiniteQuery(
+            {
+                ...filters,
+                search: filters.search?.trim() === "" ? undefined : filters.search,
+                limit,
+            },
+            {
+                getNextPageParam: (lastPage) => lastPage.nextCursor,
+                initialCursor: undefined,
+            }
+        ): api.admin.course.filterCoursesWithInfiniteScroll.useInfiniteQuery(
             {
                 ...filters,
                 search: filters.search?.trim() === "" ? undefined : filters.search,
@@ -77,7 +87,7 @@ export function CourseList({ role, enrolled }: CourseListProps) {
                     showCategories: true,
                     showTags: true,
                     showLanguages: true,
-                    showInstructors: !isTeacher,
+                    showInstructors: isUserOrAdmin,
                     showPriceRange: true,
                     showFreePaid: true,
                     showLevel: true,

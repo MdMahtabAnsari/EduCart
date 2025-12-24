@@ -1,7 +1,7 @@
 import { router, teacherProcedure } from "@/server/api/trpc";
 import { startOfMonth, endOfMonth } from "date-fns";
 import { PaginationSchema } from "@/lib/schema/page";
-import {inferRouterOutputs } from "@trpc/server";
+import { inferRouterOutputs } from "@trpc/server";
 import { filterTeacherOrdersSchema } from "@/lib/schema/order";
 
 export const orderRouter = router({
@@ -32,6 +32,10 @@ export const orderRouter = router({
                                     }
                                 }
                             }
+
+                        },
+                        instructor: {
+                            userId: ctx.session!.user.id
                         }
                     },
                 }),
@@ -52,6 +56,10 @@ export const orderRouter = router({
                                     }
                                 }
                             }
+                        }
+                        ,
+                        instructor: {
+                            userId: ctx.session!.user.id
                         }
                     },
                 }),

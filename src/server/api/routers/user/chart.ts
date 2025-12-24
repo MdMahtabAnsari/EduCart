@@ -48,7 +48,6 @@ export const chartRouter = router({
                     createdAt: 'asc'
                 }
             });
-            console.log("completedLessons:", completedLessons);
             const completedLessonsMap = new Map<string, number>();
             completedLessons.forEach(item => {
                 const dateKey = format(item.createdAt, 'yyyy-MM-dd');
@@ -62,7 +61,6 @@ export const chartRouter = router({
                     dates.push(format(cursor, 'yyyy-MM-dd'));
                     cursor = addDays(cursor, 1);
                 }
-                console.log("dates:", dates);
             } else {
                 const set = new Set<string>(Array.from(completedLessonsMap.keys()));
                 const startDay = Array.from(set).sort()[0];

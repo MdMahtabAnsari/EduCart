@@ -18,21 +18,20 @@ export async function proxy(req: NextRequest) {
     const session = await auth.api.getSession({
         headers: req.headers,
     });
-
     // adjust to your auth shape; most libs return either null or an object with user
     if (!session?.session || !session.user) {
-        const signInUrl = new URL("/auth/signin", req.url);
+        const signInUrl = new URL("/auth/sign-in", req.url);
         signInUrl.searchParams.set("callbackUrl", req.nextUrl.pathname + req.nextUrl.search);
         return NextResponse.redirect(signInUrl);
     }
 
     // if user navigates to /auth (exact), redirect them to their role dashboard
-    if (pathname.startsWith("/auth")) {
-        const role = session.user.role;
-        if (role === "admin") return NextResponse.redirect(new URL("/admin/dashboard", req.url));
-        if (role === "teacher") return NextResponse.redirect(new URL("/teacher/dashboard", req.url));
-        return NextResponse.redirect(new URL("/user/dashboard", req.url));
-    }
+    // if (pathname.startsWith("/auth")) {
+    //     const role = session.user.role;
+    //     if (role === "admin") return NextResponse.redirect(new URL("/admin/dashboard", req.url));
+    //     if (role === "teacher") return NextResponse.redirect(new URL("/teacher/dashboard", req.url));
+    //     return NextResponse.redirect(new URL("/user/dashboard", req.url));
+    // }
 
     // role-based protection for sections
     const role = session.user.role;

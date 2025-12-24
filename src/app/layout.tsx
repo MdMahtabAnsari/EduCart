@@ -7,6 +7,8 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { PaymentProvider } from "@/providers/payment-provider";
 import { PostHogProvider } from "@/providers/post-hog-provider";
+import { PostHogIdentifyProvider } from "@/providers/post-hog-identify-provider";
+import { BetterAuthProvider } from "@/providers/better-auth-provder";
 
 
 const geistSans = Geist({
@@ -41,15 +43,18 @@ export default function RootLayout({
       >
         <PostHogProvider>
         <TRPCReactProvider>
+          <BetterAuthProvider>
           <PaymentProvider>
             <TooltipProvider>
               <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+                <PostHogIdentifyProvider />
                 {children}
                 <Toaster />
 
               </ThemeProvider>
             </TooltipProvider>
           </PaymentProvider>
+          </BetterAuthProvider>
         </TRPCReactProvider>
         </PostHogProvider>
 

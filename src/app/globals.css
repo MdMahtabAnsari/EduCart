@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import 'tailwind-scrollbar-hide/v4';
+@import "@daveyplate/better-auth-ui/css";
 
 @custom-variant dark (&:is(.dark *));
 

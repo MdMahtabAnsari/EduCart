@@ -60,6 +60,7 @@ model Session {
   impersonatedBy String?
 
   @@map("session")
+  @@index([userId])
 }
 
 model Account {
@@ -79,6 +80,7 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   @@map("account")
+  @@index([userId])
 }
 
 model Verification {
@@ -90,6 +92,7 @@ model Verification {
   updatedAt  DateTime @default(now()) @updatedAt
 
   @@map("verification")
+  @@index([identifier])
 }
 
 model TwoFactor {
@@ -100,6 +103,8 @@ model TwoFactor {
   user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("twoFactor")
+  @@index([secret])
+  @@index([userId])
 }
 
 model Passkey {
@@ -115,21 +120,25 @@ model Passkey {
   createdAt    DateTime?
   aaguid       String?
 
+  name String?
+
   @@map("passkey")
+  @@index([userId])
+  @@index([credentialID])
 }
 
 model CourseInstructor {
-  id              String                      @id @default(uuid())
+  id              String                     @id @default(uuid())
   userId          String
-  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseId        String
-  course          Course                      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt       DateTime                    @default(now())
-  updatedAt       DateTime                    @updatedAt
+  course          Course                     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
   permissions     InstructorPermission[]
-  role            InstructorRole              @default(CO_INSTRUCTOR)
-  status          InstructorStatus            @default(PENDING)
-  share           Decimal                     @default(0) @db.Decimal(5, 2)
+  role            InstructorRole             @default(CO_INSTRUCTOR)
+  status          InstructorStatus           @default(PENDING)
+  share           Decimal                    @default(0) @db.Decimal(5, 2)
   orderItemsShare OrderItemInstructorShare[]
 
   @@unique([userId, courseId])
@@ -397,26 +406,26 @@ model CartItem {
 }
 
 model Order {
-  id          String      @id @default(uuid())
+  id          String       @id @default(uuid())
   userId      String
-  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  totalAmount Decimal     @default(0) @db.Decimal(10, 2)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalAmount Decimal      @default(0) @db.Decimal(10, 2)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   orderItems  OrderItem[]
   payment     Payment[]
-  enrollment Enrollment[]
+  enrollment  Enrollment[]
 }
 
 model OrderItem {
-  id               String                      @id @default(uuid())
+  id               String                     @id @default(uuid())
   orderId          String
-  order            Order                       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order            Order                      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   courseId         String
-  course           Course                      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt        DateTime                    @default(now())
-  updatedAt        DateTime                    @updatedAt
-  amount           Decimal                     @db.Decimal(10, 2)
+  course           Course                     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  amount           Decimal                    @db.Decimal(10, 2)
   refunds          Refund[]
   instructorShares OrderItemInstructorShare[]
 }
