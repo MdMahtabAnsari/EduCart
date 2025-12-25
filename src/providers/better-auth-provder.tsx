@@ -57,12 +57,6 @@ export function BetterAuthProvider({ children }: { children: ReactNode }) {
                 }
             }}
 
-            captcha={{
-                provider: "google-recaptcha-v3",
-                siteKey: process.env.NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY!,
-                endpoints: ["^/auth/.*"]
-            }}
-
             additionalFields={{
                 bio: {
                     label: 'Bio',
