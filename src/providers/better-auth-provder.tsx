@@ -10,7 +10,7 @@ import { api } from "@/trpc/react"
 export function BetterAuthProvider({ children }: { children: ReactNode }) {
     const router = useRouter()
     const uploadMediaMutation = api.common.media.uploadMedia.useMutation()
-    const {data:session} = authClient.useSession()
+    const { data: session } = authClient.useSession()
 
     return (
         <AuthUIProvider
@@ -59,7 +59,8 @@ export function BetterAuthProvider({ children }: { children: ReactNode }) {
 
             captcha={{
                 provider: "google-recaptcha-v3",
-            siteKey: process.env.NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY!,
+                siteKey: process.env.NEXT_PUBLIC_GOOGLE_RECAPTCHA_SITE_KEY!,
+                endpoints: ["^/auth/.*"]
             }}
 
             additionalFields={{
@@ -81,8 +82,8 @@ export function BetterAuthProvider({ children }: { children: ReactNode }) {
             }}
             account={
                 {
-                    basePath:`/${session?.user?.role || "user"}/settings`,
-                    fields: ["image","bio","name","email","username","role"],
+                    basePath: `/${session?.user?.role || "user"}/settings`,
+                    fields: ["image", "bio", "name", "email", "username", "role"],
                 }
             }
         >
