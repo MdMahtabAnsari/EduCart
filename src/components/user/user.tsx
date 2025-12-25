@@ -36,6 +36,10 @@ export function UserCard({ user, unBan, revokeSessions,onSucess }: UserCardProps
                                 {role}
                             </Badge>
                         )}
+                        {banned && (<Badge variant="destructive" className="text-[10px] px-2 py-0.5">
+                            Banned
+                        </Badge>
+                        )}
                     </div>
 
                     <p className="text-xs text-muted-foreground">{email}</p>

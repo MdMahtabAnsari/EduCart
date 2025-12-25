@@ -1,24 +1,32 @@
 'use client';
 import { api } from '@/trpc/react';
 import { useEffect, useState } from "react";
-// import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Spinner } from '@/components/ui/shadcn-io/spinner';
-// import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { UserCard } from "@/components/user/user";
 import { useInView } from "react-intersection-observer";
 import { authClient } from '@/lib/auth/auth-client';
 import { toast } from 'sonner';
+import { UserFilter } from '@/components/filters/user-filter';
+import { FilterUserSchema } from '@/lib/schema/user';
 
 
 export function UserList() {
-
+    const [filters, setFilters] = useState<FilterUserSchema>({
+        search: "",
+        role: "all",
+        isBanned: "all",
+    });
     const limit = 12;
     const { ref, inView } = useInView();
 
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } = api.admin.user.getUsersWithInfiniteScroll.useInfiniteQuery(
         {
-            limit
+            ...filters,
+            search: filters.search?.trim() === "" ? undefined : filters.search,
+            limit,
         },
         {
             getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -65,14 +73,14 @@ export function UserList() {
 
     return (
         <div className="w-full h-full flex flex-col gap-4">
-            {/* <EnrollmentFilter
+            <UserFilter
                 trigger={<Button className="cursor-pointer w-fit" size="lg"><SlidersHorizontal /> Filter</Button>}
                 onSubmit={(values) => {
                     setFilters(values);
                 }}
                 defaultValues={filters}
-                show={{ courseId: true, search: true, status: true }}
-            /> */}
+                show={{ search: true, role: true, isBanned: true }}
+            />
 
             <div className="w-full h-[calc(100vh-200px)] overflow-scroll scrollbar-hide">
                 <div className="flex flex-col gap-4">
@@ -85,7 +93,7 @@ export function UserList() {
                     {isFetchingNextPage ? (
                         <Spinner />
                     ) : !hasNextPage ? (
-                        <div className="text-muted-foreground">No more students to load</div>
+                        <div className="text-muted-foreground">No more users to load</div>
                     ) : undefined}
                 </div>
             </div>
