@@ -1,4 +1,4 @@
-import { User } from 'better-auth';
+
 import * as React from 'react';
 import {
     Html,
@@ -12,17 +12,14 @@ import {
     Hr,
     Tailwind,
 } from '@react-email/components';
+import { OTPEmailProps } from './sign-in-otp-email';
 
-interface OTPEmailProps {
-    user: User;
-    otp: string;
-}
 
-export default function OTPEmail({ user, otp }: OTPEmailProps) {
+export default function ResetPasswordOTPEmail({ email, otp }: OTPEmailProps) {
     const brand = 'EduCart';
     const year = new Date().getFullYear();
-    const displayName = user.name || 'there';
     const safeOTP = String(otp ?? '').replace(/\s+/g, '');
+    const displayEmail = email || 'there';
 
     return (
         <Html>
@@ -37,7 +34,7 @@ export default function OTPEmail({ user, otp }: OTPEmailProps) {
                             </Heading>
 
                             <Text className="m-0 mb-4 text-sm leading-relaxed text-gray-700">
-                                Hi {displayName}, use the code below to complete your sign-in.
+                                Hi {displayEmail}, use the code below to complete your password reset.
                             </Text>
 
                             <Section

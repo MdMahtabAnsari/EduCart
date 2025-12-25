@@ -4,3 +4,6 @@ export * from "./reset-password-email";
 export * from "./change-email";
 export * from "./otp-email";
 export * from "./magic-link-email";
+export * from "./sign-in-otp-email";
+export * from "./email-verification-otp-email";
+export * from "./reset-password-otp-email";

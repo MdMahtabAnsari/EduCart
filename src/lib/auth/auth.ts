@@ -1,8 +1,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/db/prisma"
-import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail, sendChangeEmail, sendOTPEmail, sendMagicLinkEmail, } from "@/lib/helpers/emails";
-import { twoFactor, username, magicLink, admin as adminPlugin, lastLoginMethod, openAPI,multiSession,captcha } from "better-auth/plugins"
+import { sendVerificationEmail, sendWelcomeEmail, sendResetPasswordEmail, sendChangeEmail, sendOTPEmail, sendMagicLinkEmail, sendEmailVerificationOTPEmail, sendResetPasswordOTPEmail, sendSignInOTPEmail } from "@/lib/helpers/emails";
+import { twoFactor, username, magicLink, admin as adminPlugin, lastLoginMethod, openAPI, multiSession, captcha, emailOTP } from "better-auth/plugins"
 import { nextCookies } from "better-auth/next-js";
 import { passkey } from "@better-auth/passkey"
 import { username as usernameSchema } from "@/lib/schema/common";
@@ -67,10 +67,21 @@ export const auth = betterAuth({
         }
     },
     plugins: [
-        captcha({ 
+        emailOTP({
+            async sendVerificationOTP({ email, otp, type }) {
+                if (type === "sign-in") {
+                    await sendSignInOTPEmail({ email, otp });
+                } else if (type === "email-verification") {
+                    await sendEmailVerificationOTPEmail({ email, otp });
+                } else {
+                    await sendResetPasswordOTPEmail({ email, otp });
+                }
+            },
+        }),
+        captcha({
             provider: "google-recaptcha", // or google-recaptcha, hcaptcha, captchafox
-            secretKey: process.env.GOOGLE_RECAPTCHA_SECRET_KEY!, 
-        }), 
+            secretKey: process.env.GOOGLE_RECAPTCHA_SECRET_KEY!,
+        }),
         multiSession(),
         twoFactor({
             issuer: "EduCart",
