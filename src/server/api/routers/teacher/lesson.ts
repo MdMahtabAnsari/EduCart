@@ -99,7 +99,9 @@ export const lessonRouter = router({
                             }
                         }
                     },
-                    progress: true,
+                    progress: {
+                        where: { userId: ctx.session!.user.id }
+                    },
                 },
             });
             if (!lesson) {
@@ -214,7 +216,9 @@ export const lessonRouter = router({
                 take: limitPlusOne,
                 orderBy: { order: 'asc' },
                 include: {
-                    progress: true,
+                    progress: {
+                        where: { userId: ctx.session!.user.id }
+                    },
                 },
             });
             const permissions = await prisma.courseInstructor.findFirst({

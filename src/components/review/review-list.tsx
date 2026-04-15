@@ -21,7 +21,7 @@ export function ReviewList({ courseId, role }: ReviewListProps) {
     const [page, setPage] = useState(1);
     const limit = 10;
 
-    const deleteRewviewMutation = api.user.review.deleteCourseReview.useMutation();
+    const deleteReviewMutation = api.user.review.deleteCourseReview.useMutation();
 
     const { data, isLoading, error, refetch } = api.common.review.filterdReviews.useQuery(
         {
@@ -31,7 +31,7 @@ export function ReviewList({ courseId, role }: ReviewListProps) {
     );
     const onDelete = (id: string) => {
         toast.promise(
-            deleteRewviewMutation.mutateAsync(id, {
+            deleteReviewMutation.mutateAsync(id, {
                 onSuccess: () => {
                     refetch();
                 }

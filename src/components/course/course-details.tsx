@@ -1,6 +1,6 @@
 "use client";
 import { CourseRouterOutputs } from "@/server/api/routers/teacher/course";
-import { Media } from "@/components/media/media";
+import { Media } from "@/components/media/imagekit/media";
 import { CategoryBadges } from "@/components/category/category-badges";
 import { TagBadges } from "@/components/tag/tag-badges";
 import parse from "html-react-parser";
@@ -112,7 +112,7 @@ export function CourseDetails({ course, role }: CourseDetailsProps) {
                         </div>
 
                         <div className="text-right">
-                            <div className="text-xs text-muted-foreground">Enrolments</div>
+                            <div className="text-xs text-muted-foreground">Enrollments</div>
                             <div className={`text-lg font-semibold ${(role === 'admin' || role === 'teacher') && "flex gap-2 items-center"}`}>
                                 {course.enrolments}
                                 {(role === "teacher" || role === "admin") && (

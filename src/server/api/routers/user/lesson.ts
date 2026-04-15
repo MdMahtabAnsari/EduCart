@@ -37,7 +37,9 @@ export const lessonRouter = router({
                             }
                         }
                     },
-                    progress: true,
+                    progress: {
+                        where: { userId: ctx.session!.user.id }
+                    },
                 },
             });
             if (!lesson) {
@@ -111,7 +113,9 @@ export const lessonRouter = router({
                     take: limitPlusOne,
                     orderBy: { order: 'asc' },
                     include: {
-                        progress: true,
+                        progress: {
+                        where: { userId: ctx.session!.user.id }
+                    },
                     },
                 });
                 let nextCursor: typeof cursor | undefined = undefined;

@@ -44,7 +44,7 @@ export function TagSelector({ selected, onChange }: TagSelectorProps) {
         onChange(selected.filter((id) => id !== tagId));
     }
     return (
-        <Tags className="max-w-[300px]">
+        <Tags className="max-w-75">
             <TagsTrigger>
                 {selected.map((tag) => (
                     <TagsValue key={tag} onRemove={() => handleRemove(tag)}>
@@ -74,7 +74,7 @@ export function TagSelector({ selected, onChange }: TagSelectorProps) {
 
 export const SelectorSkeleton = () => {
     return (
-        <div className="max-w-[300px]">
+        <div className="max-w-75">
             <Skeleton className="h-10 w-full rounded-md" />
         </div>
     );

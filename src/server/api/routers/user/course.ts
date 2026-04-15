@@ -68,7 +68,7 @@ export const courseRouter = router({
                 },
             });
             const canBuy = isEnrolled ? false : true;
-            const canAddToCart = isInCart ? false : true;
+            const canAddToCart = canBuy && !isInCart;
             return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: canBuy, canAddToCart: canAddToCart, permissions: { canCreate: false, canUpdate: false, canDelete: false }, instructors: instrucorCount };
         } catch (error) {
             throw error;

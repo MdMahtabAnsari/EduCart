@@ -1,5 +1,7 @@
+
 import { cloudinary } from "@/lib/media/cloudinary";
 import { UploadApiResponse } from "cloudinary";
+
 
 export const uploadToCloudinary = async ({ file, folder }: { file: File, folder: string }): Promise<UploadApiResponse> => {
     try {
@@ -32,3 +34,5 @@ export const uploadToCloudinary = async ({ file, folder }: { file: File, folder:
         throw error;
     }
 };
+
+

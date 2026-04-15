@@ -1,7 +1,7 @@
 import { router, teacherProcedure } from "@/server/api/trpc";
 import { id } from "@/lib/schema/common";
 import { inferRouterOutputs, TRPCError } from "@trpc/server";
-import { createSectionSchema, sectionWithInfiniteScroll } from "@/lib/schema/section";
+import { createSectionSchema, sectionWithInfiniteScroll,editSectionSchema } from "@/lib/schema/section";
 export const sectionRouter = router({
     getSectionsByCourseId: teacherProcedure.input(id).query(async ({ input, ctx }) => {
         const prisma = ctx.prisma;
@@ -204,6 +204,34 @@ export const sectionRouter = router({
                 nextCursor = nextItem!.id;
             }
             return { sections, nextCursor, permissions: { canCreate, canUpdate, canDelete } };
+        } catch (error) {
+            throw error;
+        }
+    }),
+    editSection: teacherProcedure.input(editSectionSchema).mutation(async ({ input, ctx }) => {
+        const prisma = ctx.prisma;
+        try {
+            const section = await prisma.section.update({
+                where: {
+                    id: input.id,
+                    course: {
+                        instructor: {
+                            some: {
+                                userId: ctx.session!.user.id,
+                                status: 'APPROVED',
+                                permissions: {
+                                    has: "UPDATE"
+                                }
+                            }
+                        },
+                        isActive: true
+                    }
+                },
+                data: {
+                    title: input.title
+                }
+            });
+            return section;
         } catch (error) {
             throw error;
         }

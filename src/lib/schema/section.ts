@@ -16,3 +16,8 @@ export const sectionWithInfiniteScroll = z.object({
 }).extend(infiniteScroll.shape);
 
 export type SectionWithInfiniteScroll = z.infer<typeof sectionWithInfiniteScroll>;
+
+export const editSectionSchema = createSectionSchema.omit({ courseId: true }).partial().extend({
+    id: id,
+});
+export type EditSectionSchema = z.infer<typeof editSectionSchema>;

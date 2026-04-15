@@ -5,6 +5,8 @@ import { courseRouter } from "@/server/api/routers/admin/course";
 import { orderRouter } from "@/server/api/routers/admin/order";
 import { enrollmentRouter } from "@/server/api/routers/admin/enrollment";
 import { userRouter } from "@/server/api/routers/admin/user";
+import {sectionRouter} from "@/server/api/routers/admin/section";
+import {lessonRouter} from "@/server/api/routers/admin/lesson";
 
 export const adminRouter = router({
     language: languageRouter,
@@ -13,4 +15,6 @@ export const adminRouter = router({
     order: orderRouter,
     enrollment: enrollmentRouter,
     user: userRouter,
+    section: sectionRouter,
+    lesson: lessonRouter,
 });

@@ -36,8 +36,10 @@ export type CourseSchemaFrontEnd = z.infer<typeof courseSchemaFrontEnd>;
 
 export const courseSchemaBackEnd = courseSchemaFrontEnd.omit({
     description: true,
+    media: true,
 }).extend({
     description: z.string().min(20, "Description must be at least 20 characters long"),
+    media: mediaSchema,
 });
 
 export type CourseSchemaBackEnd = z.infer<typeof courseSchemaBackEnd>;

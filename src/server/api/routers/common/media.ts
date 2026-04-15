@@ -1,6 +1,6 @@
 import { router, protectedProcedure } from "@/server/api/trpc";
 import { uploadMediaSchema } from "@/lib/schema/media";
-import { uploadToCloudinary } from "@/lib/media/upload";
+import { uploadToCloudinary } from "@/lib/media/cloudinaryUpload";
 
 
 export const mediaRouter = router({

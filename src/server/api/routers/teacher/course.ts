@@ -42,7 +42,7 @@ export const courseRouter = router({
                     message: "Course not found",
                 });
             }
-            const reatingCount = await prisma.review.count({
+            const ratingCount = await prisma.review.count({
                 where: {
                     courseId: input,
                 },
@@ -68,7 +68,7 @@ export const courseRouter = router({
             const canCreate = permissions?.permissions.includes('CREATE') ?? false;
             const canUpdate = permissions?.permissions.includes('UPDATE') ?? false;
             const canDelete = permissions?.permissions.includes('DELETE') ?? false;
-            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: reatingCount }, canBuy: false, canAddToCart: false, permissions: { canCreate, canUpdate, canDelete },instructors: instrucorCount };
+            return { ...course, price: Number(course.price), offerPrice: course.offerPrice ? Number(course.offerPrice) : null, enrolments, rating: { average: course.ratings, count: ratingCount }, canBuy: false, canAddToCart: false, permissions: { canCreate, canUpdate, canDelete },instructors: instrucorCount };
         } catch (error) {
             throw error;
         }

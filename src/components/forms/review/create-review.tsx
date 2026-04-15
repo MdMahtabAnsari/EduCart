@@ -1,4 +1,5 @@
 "use client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -17,15 +18,15 @@ import {
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+// Assuming you have Textarea from standard shadcn/ui
+import { Textarea } from "@/components/ui/textarea"; 
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
+import { Send, Loader2 } from "lucide-react";
 
 export interface CreateReviewProps {
     courseId: string;
@@ -42,15 +43,21 @@ export function CreateReviewForm({ courseId, onSubmitSuccess }: CreateReviewProp
         },
         mode: "onChange",
     });
+
     const createReview = api.user.review.submitCourseReview.useMutation();
+    const isSubmitting = form.formState.isSubmitting;
+
     const onSubmit = async (data: CreateReviewSchema) => {
         toast.promise(
-            createReview.mutateAsync({...data,comment:data.comment?.trim()==='' ? undefined : data.comment}, {
-                onSuccess: () => {
-                    form.reset();
-                    onSubmitSuccess?.();
+            createReview.mutateAsync(
+                { ...data, comment: data.comment?.trim() === '' ? undefined : data.comment }, 
+                {
+                    onSuccess: () => {
+                        form.reset();
+                        onSubmitSuccess?.();
+                    }
                 }
-            }),
+            ),
             {
                 loading: "Submitting review...",
                 success: "Review submitted successfully!",
@@ -61,55 +68,66 @@ export function CreateReviewForm({ courseId, onSubmitSuccess }: CreateReviewProp
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
                     name="rating"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-base font-medium">Rating</FormLabel>
+                            <FormLabel className="text-sm font-semibold">Overall Rating</FormLabel>
                             <FormControl>
-                                <Rating {...field} onValueChange={field.onChange} >
+                                <Rating {...field} onValueChange={field.onChange} className="flex gap-1">
                                     {Array.from({ length: 5 }).map((_, index) => (
-                                        <RatingButton className={index < field.value ? "text-green-500" : "text-muted-foreground"} key={index} />
+                                        <RatingButton 
+                                            key={index}
+                                            className={`w-6 h-6 transition-colors ${
+                                                index < field.value 
+                                                    ? "text-amber-500 fill-amber-500" 
+                                                    : "text-muted-foreground/30 hover:text-amber-500/50"
+                                            }`} 
+                                        />
                                     ))}
                                 </Rating>
                             </FormControl>
-                            <FormDescription>
-                                Select a rating for the course.
-                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
+
                 <FormField
                     control={form.control}
                     name="comment"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-base font-medium">Comment</FormLabel>
+                            <FormLabel className="text-sm font-semibold">Written Review (Optional)</FormLabel>
                             <FormControl>
-                                <Input
-                                    placeholder="Enter your comment"
+                                <Textarea
+                                    placeholder="What did you think about this course?"
+                                    className="resize-none min-h-25 focus-visible:ring-primary"
                                     {...field}
-                                    className="focus:ring-primary focus:border-primary/70 transition-all"
                                 />
                             </FormControl>
-                            <FormDescription>
-                                Write your review comment here.
-                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
                 />
-                <Separator />
+
                 <Button
                     type="submit"
-                    disabled={!form.formState.isValid || form.formState.isSubmitting}
-                    className="w-full cursor-pointer"
+                    disabled={!form.formState.isValid || isSubmitting}
+                    className="w-full mt-2 transition-all"
                 >
-                    <Plus />
-                    Submit Review
+                    {isSubmitting ? (
+                        <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Submitting...
+                        </>
+                    ) : (
+                        <>
+                            <Send className="w-4 h-4 mr-2" />
+                            Submit Review
+                        </>
+                    )}
                 </Button>
             </form>
         </Form>
@@ -118,12 +136,12 @@ export function CreateReviewForm({ courseId, onSubmitSuccess }: CreateReviewProp
 
 export function CreateReview({ courseId, onSubmitSuccess }: CreateReviewProps) {
     return (
-        <Card className="w-full border-none shadow-none bg-transparent">
-            <CardHeader>
-                <CardTitle className="text-lg font-semibold">Write a Review</CardTitle>
-                <CardDescription>Share your thoughts about the course.</CardDescription>
+        <Card className="w-full border shadow-sm bg-card">
+            <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-semibold tracking-tight">Write a Review</CardTitle>
+                <CardDescription>Share your experience to help other students.</CardDescription>
             </CardHeader>
-            <Separator />
+            <Separator className="mb-4" />
             <CardContent>
                 <CreateReviewForm courseId={courseId} onSubmitSuccess={onSubmitSuccess} />
             </CardContent>
