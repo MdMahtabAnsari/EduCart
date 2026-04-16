@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     } = await req.json();
     const result = streamText({
         model: google(model),
-        messages: convertToModelMessages(messages),
+        messages: await convertToModelMessages(messages),
         system: 'You are a helpful assistant that can answer questions and help with tasks',
     });
     // send sources and reasoning back to the client
